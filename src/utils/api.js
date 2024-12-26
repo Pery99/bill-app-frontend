@@ -10,7 +10,8 @@ const api = axios.create({
   },
 });
 
-// Request interceptor
+
+
 api.interceptors.request.use(
   (config) => {
     const token = authUtils.getToken();
