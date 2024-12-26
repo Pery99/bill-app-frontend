@@ -7,7 +7,7 @@ function WalletCard({ balance, lastFunded, loading, formatDate }) {
       <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-xs text-white/90">
           <InformationCircleIcon className="w-4 h-4 inline-block mr-1" />
-          1.5% deposit fee applies
+          Active
         </div>
       </div>
 
@@ -32,7 +32,6 @@ function WalletCard({ balance, lastFunded, loading, formatDate }) {
             ? `Last funded: ${formatDate(lastFunded)}`
             : "No recent funding"}
         </span>
-        
       </div>
     </div>
   );

@@ -176,14 +176,9 @@ function FundWallet() {
             />
           </svg>
           <div className="text-sm text-blue-700">
-            <p className="font-medium mb-1">Transaction Fees</p>
+            <p className="font-medium mb-1">Transaction Info</p>
             <ul className="list-disc list-inside space-y-1 text-blue-600">
-              <li>A 1.5% processing fee applies to all deposits</li>
-              {amount && (
-                <li className="font-medium">
-                  Fee for ₦{Number(amount).toLocaleString()}: ₦{calculateFee(amount)}
-                </li>
-              )}
+              <li>A free processing fee applies to all deposits</li>
               <li>Instant wallet credit upon successful payment</li>
             </ul>
           </div>
@@ -278,8 +273,7 @@ function FundWallet() {
           </svg>
           <p className="text-sm text-blue-600">
             <strong>Note:</strong> Minimum funding amount is ₦100. Your wallet
-            will be credited immediately after successful payment. A 1.5%
-            processing fee applies.
+            will be credited immediately after successful payment.
           </p>
         </div>
       </div>
