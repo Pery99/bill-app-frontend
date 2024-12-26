@@ -4,6 +4,7 @@ import { notify } from "../utils/toast";
 import api from "../utils/api";
 import PaystackPop from "@paystack/inline-js";
 import { walletService } from "../services/walletService";
+import { useNavigate } from "react-router-dom";
 
 function FundWallet() {
   const [amount, setAmount] = useState("");
@@ -11,7 +12,7 @@ function FundWallet() {
   const { user } = useSelector((state) => state.auth);
 
   const presetAmounts = [1000, 2000, 5000, 10000, 20000];
-
+  const navigate = useNavigate();
   const initializePayment = async (data) => {
     try {
       // console.log("Initializing payment with data:", data); // Debug log
@@ -75,6 +76,7 @@ function FundWallet() {
       // Fetch updated balance
       const newBalance = await walletService.getBalance();
       notify.success("Payment successful! Your wallet has been credited.");
+      navigate("/");
       setAmount("");
     } catch (error) {
       console.error("Error updating balance:", error);
