@@ -114,48 +114,50 @@ function Dashboard() {
       {/* Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Recent Transactions
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Recent Transactions
+            </h2>
+            <Link 
+              to="/transactions" 
+              className="text-sm text-primary hover:text-primary-600"
+            >
+              View all →
+            </Link>
+          </div>
           <div className="space-y-4">
-            {walletData.recentTransactions.length > 0 ? (
-              walletData.recentTransactions.map((transaction) => (
-                <div
-                  key={transaction._id}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    {transaction.transaction_type === "credit" ? (
-                      <ArrowDownIcon className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <ArrowUpIcon className="w-5 h-5 text-red-500" />
-                    )}
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {transaction.type === 'funding' ? 'Wallet Funding' : transaction.type}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatDate(transaction.createdAt)}
-                      </p>
-                    </div>
+            {walletData.recentTransactions.slice(0, 3).map((transaction) => (
+              <div
+                key={transaction._id}
+                className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
+              >
+                <div className="flex items-center space-x-3">
+                  {transaction.transaction_type === "credit" ? (
+                    <ArrowDownIcon className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <ArrowUpIcon className="w-5 h-5 text-red-500" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {transaction.type === 'funding' ? 'Wallet Funding' : transaction.type}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatDate(transaction.createdAt)}
+                    </p>
                   </div>
-                  <span
-                    className={`font-medium ${
-                      transaction.transaction_type === "credit"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {transaction.transaction_type === "credit" ? "+" : "-"}₦
-                    {transaction.amount.toLocaleString()}
-                  </span>
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center py-4">
-                No recent transactions
-              </p>
-            )}
+                <span
+                  className={`font-medium ${
+                    transaction.transaction_type === "credit"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {transaction.transaction_type === "credit" ? "+" : "-"}₦
+                  {transaction.amount.toLocaleString()}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 

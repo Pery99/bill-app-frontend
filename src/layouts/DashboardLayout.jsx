@@ -79,8 +79,18 @@ function DashboardLayout() {
       }
     };
 
-    fetchBalance();
-  }, []);
+    fetchBalance(); // Initial fetch
+
+    // Set up interval for periodic refresh
+    const intervalId = setInterval(fetchBalance, 30000);
+
+    // Refresh on route change
+    const unsubscribe = location.pathname;
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [location.pathname]);
 
   // Handle window resize
   useEffect(() => {

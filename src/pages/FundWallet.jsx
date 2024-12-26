@@ -14,7 +14,7 @@ function FundWallet() {
 
   const initializePayment = async (data) => {
     try {
-      console.log("Initializing payment with data:", data); // Debug log
+      // console.log("Initializing payment with data:", data); // Debug log
 
       const response = await api.post("/transactions/initialize-payment", {
         amount: data.amount,
@@ -22,7 +22,7 @@ function FundWallet() {
         metadata: data.metadata,
       });
 
-      console.log("Payment initialization response:", response.data); // Debug log
+      // console.log("Payment initialization response:", response.data); // Debug log
 
       // Check for correct response structure
       if (!response.data || !response.data.data) {
@@ -49,16 +49,20 @@ function FundWallet() {
   const verifyPayment = async (reference) => {
     try {
       // Changed to GET request and updated the endpoint URL
-      const response = await api.get(`/transactions/verify-payment/${reference}`);
-      console.log('Verification response:', response.data); // Debug log
+      const response = await api.get(
+        `/transactions/verify-payment/${reference}`
+      );
+      // console.log("Verification response:", response.data); // Debug log
       return response.data;
     } catch (error) {
-      console.error('Payment verification error:', {
+      console.error("Payment verification error:", {
         error: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
       });
-      throw new Error(error.response?.data?.message || 'Failed to verify payment');
+      throw new Error(
+        error.response?.data?.message || "Failed to verify payment"
+      );
     }
   };
 
@@ -73,7 +77,7 @@ function FundWallet() {
       notify.success("Payment successful! Your wallet has been credited.");
       setAmount("");
     } catch (error) {
-      console.error('Error updating balance:', error);
+      console.error("Error updating balance:", error);
       notify.success("Payment successful! Please refresh to see new balance.");
     }
   };
@@ -114,16 +118,18 @@ function FundWallet() {
         metadata: paymentData.metadata,
         callback: async (response) => {
           try {
-            console.log('Payment callback response:', response); // Debug log
+            // console.log("Payment callback response:", response); // Debug log
             const verificationData = await verifyPayment(response.reference);
 
             if (verificationData.status === "success") {
               await handlePaymentSuccess(verificationData);
             } else {
-              notify.error(verificationData.message || "Transaction verification failed");
+              notify.error(
+                verificationData.message || "Transaction verification failed"
+              );
             }
           } catch (error) {
-            console.error('Verification error:', error);
+            console.error("Verification error:", error);
             notify.error(error.message || "Failed to verify payment");
           } finally {
             setLoading(false);
@@ -148,6 +154,22 @@ function FundWallet() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Fund Wallet</h1>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
+        {/* Payment Method Section */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Payment Method
+          </label>
+          <div className="p-4 border rounded-lg bg-gray-50 flex items-center">
+            <img src="/paystack-logo.png" alt="Paystack" className="h-8 mr-3" />
+            <div>
+              <p className="font-medium text-gray-900">Paystack</p>
+              <p className="text-sm text-gray-500">
+                Fast & secure payment with cards, bank transfer, or USSD
+              </p>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
@@ -181,7 +203,7 @@ function FundWallet() {
           <button
             type="submit"
             disabled={loading || !amount}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -208,7 +230,14 @@ function FundWallet() {
                 Processing...
               </span>
             ) : (
-              `Fund Wallet with ₦${Number(amount).toLocaleString() || "0"}`
+              <span className="flex items-center justify-center">
+                Pay ₦{Number(amount).toLocaleString() || "0"}
+                <img
+                  src="/paystack-badge.png"
+                  alt="Secured by Paystack"
+                  className="h-4 ml-2"
+                />
+              </span>
             )}
           </button>
         </form>
