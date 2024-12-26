@@ -60,7 +60,7 @@ function Airtime() {
         amount: Number(formData.amount),
       });
 
-      if (response.data.Status === "completed") {
+      if (response.data.Status === "successful") {
         notify.success("Airtime purchased successfully");
         // Clear form
         setFormData({ network: "", phoneNumber: "", amount: "" });
