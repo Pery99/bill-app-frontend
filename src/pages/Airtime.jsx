@@ -59,7 +59,7 @@ function Airtime() {
         provider: formData.network,
         amount: Number(formData.amount),
       });
-
+      // console.log('THIS IS ITTTTTT' ,response);
       if (response.data.Status === "successful") {
         notify.success("Airtime purchased successfully");
         // Clear form
