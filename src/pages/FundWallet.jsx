@@ -1,111 +1,224 @@
-import { useState } from 'react';
-import { CreditCardIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { notify } from "../utils/toast";
+import api from "../utils/api";
+import PaystackPop from "@paystack/inline-js";
+import { walletService } from "../services/walletService";
 
 function FundWallet() {
-  const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
-  
-  const presetAmounts = [1000, 2000, 5000, 10000, 20000];
-  
-  const paymentMethods = [
-    { 
-      id: 'card', 
-      name: 'Debit Card', 
-      icon: CreditCardIcon,
-      description: 'Fund your wallet using your debit card'
-    },
-    { 
-      id: 'bank', 
-      name: 'Bank Transfer', 
-      icon: BuildingLibraryIcon,
-      description: 'Fund via bank transfer'
-    }
-  ];
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
-  const handleSubmit = (e) => {
+  const presetAmounts = [1000, 2000, 5000, 10000, 20000];
+
+  const initializePayment = async (data) => {
+    try {
+      console.log("Initializing payment with data:", data); // Debug log
+
+      const response = await api.post("/transactions/initialize-payment", {
+        amount: data.amount,
+        email: data.email,
+        metadata: data.metadata,
+      });
+
+      console.log("Payment initialization response:", response.data); // Debug log
+
+      // Check for correct response structure
+      if (!response.data || !response.data.data) {
+        throw new Error("Invalid response structure");
+      }
+
+      // Return the authorization URL and reference
+      return {
+        authorization_url: response.data.data.authorization_url,
+        reference: response.data.data.reference,
+      };
+    } catch (error) {
+      console.error("Payment initialization error:", {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw new Error(
+        error.response?.data?.message || "Failed to initialize payment"
+      );
+    }
+  };
+
+  const verifyPayment = async (reference) => {
+    try {
+      // Changed to GET request and updated the endpoint URL
+      const response = await api.get(`/transactions/verify-payment/${reference}`);
+      console.log('Verification response:', response.data); // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Payment verification error:', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      throw new Error(error.response?.data?.message || 'Failed to verify payment');
+    }
+  };
+
+  const handleAmountClick = (value) => {
+    setAmount(value.toString());
+  };
+
+  const handlePaymentSuccess = async (verificationData) => {
+    try {
+      // Fetch updated balance
+      const newBalance = await walletService.getBalance();
+      notify.success("Payment successful! Your wallet has been credited.");
+      setAmount("");
+    } catch (error) {
+      console.error('Error updating balance:', error);
+      notify.success("Payment successful! Please refresh to see new balance.");
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle payment processing
-    console.log({ amount, paymentMethod });
+
+    if (!amount || isNaN(amount) || Number(amount) < 100) {
+      notify.error("Please enter a valid amount (minimum ₦100)");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Prepare payment data
+      const paymentData = {
+        amount: Number(amount),
+        email: user.email,
+        metadata: {
+          user_id: user._id,
+          full_name: user.fullName || user.fullname,
+        },
+      };
+
+      // Initialize payment
+      const initData = await initializePayment(paymentData);
+
+      if (!initData?.authorization_url) {
+        throw new Error("Missing authorization URL");
+      }
+
+      const handler = PaystackPop.setup({
+        key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+        email: user.email,
+        amount: Number(amount) * 100,
+        ref: initData.reference,
+        metadata: paymentData.metadata,
+        callback: async (response) => {
+          try {
+            console.log('Payment callback response:', response); // Debug log
+            const verificationData = await verifyPayment(response.reference);
+
+            if (verificationData.status === "success") {
+              await handlePaymentSuccess(verificationData);
+            } else {
+              notify.error(verificationData.message || "Transaction verification failed");
+            }
+          } catch (error) {
+            console.error('Verification error:', error);
+            notify.error(error.message || "Failed to verify payment");
+          } finally {
+            setLoading(false);
+          }
+        },
+        onClose: () => {
+          setLoading(false);
+          notify.info("Transaction cancelled");
+        },
+      });
+
+      handler.openIframe();
+    } catch (error) {
+      console.error("Payment error:", error);
+      setLoading(false);
+      notify.error(error.message || "Failed to process payment");
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-md mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Fund Wallet</h1>
-      
+
       <div className="bg-white rounded-xl shadow-sm p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Amount Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Amount</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₦</span>
-              <input
-                type="number"
-                className="input-field pl-8"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-                min="100"
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700">
+              Amount (₦)
+            </label>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="input-field"
+              placeholder="Enter amount"
+              min="100"
+              disabled={loading}
+            />
           </div>
 
-          {/* Preset Amounts */}
-          <div className="grid grid-cols-3 gap-3">
-            {presetAmounts.map((preset) => (
+          {/* Preset amounts */}
+          <div className="grid grid-cols-3 gap-2">
+            {presetAmounts.map((value) => (
               <button
-                key={preset}
+                key={value}
                 type="button"
-                onClick={() => setAmount(preset)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                  ${amount === preset 
-                    ? 'bg-primary text-white' 
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}
+                onClick={() => handleAmountClick(value)}
+                className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                ₦{preset.toLocaleString()}
+                ₦{value.toLocaleString()}
               </button>
             ))}
           </div>
 
-          {/* Payment Methods */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Payment Method</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {paymentMethods.map((method) => (
-                <button
-                  key={method.id}
-                  type="button"
-                  onClick={() => setPaymentMethod(method.id)}
-                  className={`flex items-start p-4 rounded-lg border-2 transition-colors
-                    ${paymentMethod === method.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 hover:border-gray-300'}`}
-                >
-                  <method.icon className="w-6 h-6 text-primary mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <div className="font-medium text-gray-900">{method.name}</div>
-                    <div className="text-sm text-gray-500">{method.description}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit Button */}
           <button
             type="submit"
-            disabled={!amount || !paymentMethod}
-            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !amount}
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Fund Wallet with ₦{Number(amount).toLocaleString()}
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              `Fund Wallet with ₦${Number(amount).toLocaleString() || "0"}`
+            )}
           </button>
         </form>
-      </div>
 
-      {/* Security Notice */}
-      <div className="mt-6 text-center text-sm text-gray-500">
-        <p>🔒 Your transactions are secure and encrypted</p>
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-600">
+            <strong>Note:</strong> Minimum funding amount is ₦100. Your wallet
+            will be credited immediately after successful payment.
+          </p>
+        </div>
       </div>
     </div>
   );

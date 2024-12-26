@@ -8,71 +8,67 @@ import {
   ArrowDownIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
+import { walletService } from "../services/walletService";
+import { notify } from "../utils/toast";
 
 function Dashboard() {
   const dispatch = useDispatch();
-  const { user, loading, userFetched } = useSelector(state => state.auth);
+  const { user } = useSelector(state => state.auth);
   
+  const [walletData, setWalletData] = useState({
+    balance: 0,
+    lastFunded: null,
+    recentTransactions: []
+  });
+  const [fundingHistory, setFundingHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (!user && !userFetched) {
-      dispatch(fetchUserData());
-    }
-  }, [dispatch, user, userFetched]);
+    const fetchWalletData = async () => {
+      try {
+        const [balanceData, fundingData] = await Promise.all([
+          walletService.getBalance(),
+          walletService.getFundingHistory()
+        ]);
 
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [recentTransactions] = useState([
-    {
-      id: 1,
-      type: "credit",
-      amount: 5000,
-      description: "Wallet Funding",
-      date: "2024-01-20",
-    },
-    {
-      id: 2,
-      type: "debit",
-      amount: 1000,
-      description: "Airtime Purchase",
-      date: "2024-01-19",
-    },
-  ]);
+        setWalletData({
+          balance: balanceData.balance,
+          lastFunded: balanceData.lastFunded,
+          recentTransactions: balanceData.recentTransactions
+        });
+        setFundingHistory(fundingData);
+      } catch (error) {
+        notify.error("Failed to fetch wallet data");
+        console.error("Wallet data fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const quickStats = [
-    {
-      id: 1,
-      title: "Total Spent",
-      amount: "₦45,000",
-      trend: "-12%",
-      color: "text-red-600",
-    },
-    {
-      id: 2,
-      title: "Total Funded",
-      amount: "₦120,000",
-      trend: "+23%",
-      color: "text-green-600",
-    },
-    {
-      id: 3,
-      title: "Active Bills",
-      amount: "3",
-      trend: "0%",
-      color: "text-blue-600",
-    },
-  ];
+    fetchWalletData();
+  }, []);
+
+  // Format date helper
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
 
   const updates = [
     {
       id: 1,
       title: "New Features Added",
-      description: "You can now schedule bill payments",
-      date: "2024-01-20",
+      description: "You can now schedule bill payments and track your spending.",
+      date: new Date(),
     },
     {
       id: 2,
-      title: "System Maintenance",
-      description: "Scheduled maintenance on Jan 25",
-      date: "2024-01-19",
+      title: "Wallet Balance Updates",
+      description: "Real-time balance updates and transaction history now available.",
+      date: new Date(),
     },
   ];
 
@@ -82,11 +78,7 @@ function Dashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {loading ? (
-              'Loading...'
-            ) : (
-              `Hello, there! 👋`
-            )}
+            Hello, {user?.fullname?.split(' ')[0] || 'there'}! 👋
           </h1>
           <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
         </div>
@@ -104,66 +96,58 @@ function Dashboard() {
           </div>
         </div>
         <p className="text-4xl font-bold text-white mb-4">
-          ₦{walletBalance.toLocaleString()}
+          {loading ? (
+            <span className="text-2xl">Loading...</span>
+          ) : (
+            `₦${walletData.balance.toLocaleString()}`
+          )}
         </p>
         <div className="flex space-x-4">
-          <span className="text-sm text-white/80">Last funded: 2 days ago</span>
+          <span className="text-sm text-white/80">
+            {walletData.lastFunded 
+              ? `Last funded: ${formatDate(walletData.lastFunded)}`
+              : 'No recent funding'}
+          </span>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {quickStats.map((stat) => (
-          <div key={stat.id} className="bg-white rounded-xl p-6 shadow-sm">
-            <h3 className="text-sm text-gray-500 mb-2">{stat.title}</h3>
-            <div className="flex items-center justify-between">
-              <p className="text-2xl font-semibold">{stat.amount}</p>
-              <span className={`flex items-center ${stat.color}`}>
-                {stat.trend}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent Transactions and Updates Grid */}
+      {/* Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Transactions */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Recent Transactions
           </h2>
           <div className="space-y-4">
-            {recentTransactions.length > 0 ? (
-              recentTransactions.map((transaction) => (
+            {walletData.recentTransactions.length > 0 ? (
+              walletData.recentTransactions.map((transaction) => (
                 <div
-                  key={transaction.id}
+                  key={transaction._id}
                   className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
-                    {transaction.type === "credit" ? (
+                    {transaction.transaction_type === "credit" ? (
                       <ArrowDownIcon className="w-5 h-5 text-green-500" />
                     ) : (
                       <ArrowUpIcon className="w-5 h-5 text-red-500" />
                     )}
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {transaction.description}
+                        {transaction.type === 'funding' ? 'Wallet Funding' : transaction.type}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {transaction.date}
+                        {formatDate(transaction.createdAt)}
                       </p>
                     </div>
                   </div>
                   <span
                     className={`font-medium ${
-                      transaction.type === "credit"
+                      transaction.transaction_type === "credit"
                         ? "text-green-600"
                         : "text-red-600"
                     }`}
                   >
-                    {transaction.type === "credit" ? "+" : "-"}₦
-                    {transaction.amount}
+                    {transaction.transaction_type === "credit" ? "+" : "-"}₦
+                    {transaction.amount.toLocaleString()}
                   </span>
                 </div>
               ))
@@ -192,7 +176,7 @@ function Dashboard() {
                 </p>
                 <div className="flex items-center mt-2 text-xs text-gray-400">
                   <ClockIcon className="w-4 h-4 mr-1" />
-                  {update.date}
+                  {formatDate(update.date)}
                 </div>
               </div>
             ))}

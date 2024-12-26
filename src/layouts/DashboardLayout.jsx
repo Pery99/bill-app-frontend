@@ -15,12 +15,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout, fetchUserData } from "../store/slices/authSlice"; // Add fetchUserData import
 import toast from "react-hot-toast";
 import { notify } from "../utils/toast";
+import { walletService } from "../services/walletService";
 
 function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const location = useLocation();
-  const [balance] = useState(0);
+  const [walletData, setWalletData] = useState({
+    balance: 0,
+    loading: true
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
@@ -59,6 +63,24 @@ function DashboardLayout() {
 
     init();
   }, [token, user, userFetched]);
+
+  // Fetch wallet balance
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const data = await walletService.getBalance();
+        setWalletData({
+          balance: data.balance,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Failed to fetch balance:', error);
+        setWalletData(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchBalance();
+  }, []);
 
   // Handle window resize
   useEffect(() => {
@@ -131,7 +153,11 @@ function DashboardLayout() {
             <div className="bg-primary/5 rounded-xl p-4">
               <p className="text-sm text-gray-600">Wallet Balance</p>
               <p className="text-2xl font-bold text-primary">
-                ₦{balance.toLocaleString()}
+                {walletData.loading ? (
+                  <span className="text-lg">Loading...</span>
+                ) : (
+                  `₦${walletData.balance.toLocaleString()}`
+                )}
               </p>
               <Link
                 to="/fund-wallet"
