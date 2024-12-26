@@ -38,6 +38,7 @@ export const authUtils = {
     }
   },
 
+  
   removeToken: () => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
