@@ -5,11 +5,14 @@ import { fetchUserData } from '../store/slices/authSlice';
 import {
   WalletIcon,
   ArrowUpIcon,
-  ArrowDownIcon,
   ClockIcon,
+  PhoneIcon,
+  WifiIcon,
 } from "@heroicons/react/24/outline";
 import { walletService } from "../services/walletService";
 import { notify } from "../utils/toast";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
+import WalletCard from '../components/WalletCard';
 
 function Dashboard() {
   const dispatch = useDispatch();
@@ -72,13 +75,32 @@ function Dashboard() {
     },
   ];
 
+  const quickLinks = [
+    {
+      id: 1,
+      name: "Buy Airtime",
+      href: "/airtime",
+      icon: PhoneIcon,
+      color: "bg-purple-100 text-purple-600",
+      description: "Purchase airtime for any network"
+    },
+    {
+      id: 2,
+      name: "Buy Data",
+      href: "/data",
+      icon: WifiIcon,
+      color: "bg-blue-100 text-blue-600",
+      description: "Get internet data bundles"
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Hello, {user?.fullname?.split(' ')[0] || 'there'}! 👋
+            Hello, {user?.fullname?.split(" ")[0] || "there"}! 👋
           </h1>
           <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
         </div>
@@ -87,39 +109,57 @@ function Dashboard() {
         </Link>
       </div>
 
-      {/* Wallet Card */}
-      <div className="bg-primary rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <WalletIcon className="w-8 h-8 text-white/80" />
-            <h2 className="text-xl text-white font-semibold">Wallet Balance</h2>
-          </div>
-        </div>
-        <p className="text-4xl font-bold text-white mb-4">
-          {loading ? (
-            <span className="text-2xl">Loading...</span>
-          ) : (
-            `₦${walletData.balance.toLocaleString()}`
-          )}
-        </p>
-        <div className="flex space-x-4">
-          <span className="text-sm text-white/80">
-            {walletData.lastFunded 
-              ? `Last funded: ${formatDate(walletData.lastFunded)}`
-              : 'No recent funding'}
-          </span>
+      {/* Replace existing wallet card with new component */}
+      <WalletCard 
+        balance={walletData.balance}
+        lastFunded={walletData.lastFunded}
+        loading={loading}
+        formatDate={formatDate}
+      />
+
+      {/* Quick Links Section */}
+      <div className="py-2">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.id}
+              to={link.href}
+              className="group bg-white rounded-xl p-4 hover:shadow-md transition-all duration-200 border border-gray-100"
+            >
+              <div className="flex items-start space-x-4">
+                <div className={`p-3 rounded-lg ${link.color}`}>
+                  <link.icon className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-primary">
+                    {link.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {link.description}
+                  </p>
+                  <div className="mt-2 flex items-center text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Buy Now</span>
+                    <ArrowUpIcon className="w-4 h-4 ml-1 rotate-45" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* Recent Transactions and Updates Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               Recent Transactions
             </h2>
-            <Link 
-              to="/transactions" 
+            <Link
+              to="/transactions"
               className="text-sm text-primary hover:text-primary-600"
             >
               View all →
@@ -132,14 +172,18 @@ function Dashboard() {
                 className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg"
               >
                 <div className="flex items-center space-x-3">
-                  {transaction.transaction_type === "credit" ? (
-                    <ArrowDownIcon className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <ArrowUpIcon className="w-5 h-5 text-red-500" />
-                  )}
+                  {transaction.status === "completed" ? (
+                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  ) : transaction.status === "pending" ? (
+                    <ClockIcon className="w-5 h-5 text-yellow-500" />
+                  ) : transaction.status === "failed" ? (
+                    <XCircleIcon className="w-5 h-5 text-red-500" />
+                  ) : null}
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {transaction.type === 'funding' ? 'Wallet Funding' : transaction.type}
+                      {transaction.type === "funding"
+                        ? "Wallet Funding"
+                        : transaction.type}
                     </p>
                     <p className="text-xs text-gray-500">
                       {formatDate(transaction.createdAt)}

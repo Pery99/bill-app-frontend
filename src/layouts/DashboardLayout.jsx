@@ -24,11 +24,11 @@ function DashboardLayout() {
   const location = useLocation();
   const [walletData, setWalletData] = useState({
     balance: 0,
-    loading: true
+    loading: true,
   });
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   // Fix: Define navigation array
   const navigation = [
     { name: "Dashboard", href: "/", icon: WalletIcon },
@@ -39,12 +39,13 @@ function DashboardLayout() {
     { name: "Buy Electricity", href: "/electricity", icon: LightBulbIcon },
     { name: "Transactions", href: "/transactions", icon: ClockIcon },
   ];
-  
+
   // Update selector to include userFetched flag
   const { user, token, userFetched } = useSelector((state) => state.auth);
 
   // Simplify display name logic
-  const displayName = user?.firstName || user?.fullName?.split(" ")[0] || "User";
+  const displayName =
+    user?.firstName || user?.fullName?.split(" ")[0] || "User";
 
   // Single useEffect for user data
   useEffect(() => {
@@ -53,7 +54,7 @@ function DashboardLayout() {
         try {
           await dispatch(fetchUserData()).unwrap();
         } catch (error) {
-          console.error('Failed to fetch user:', error);
+          console.error("Failed to fetch user:", error);
           // Only logout if token is invalid
           if (error?.response?.status === 401) {
             handleLogout();
@@ -72,11 +73,11 @@ function DashboardLayout() {
         const data = await walletService.getBalance();
         setWalletData({
           balance: data.balance,
-          loading: false
+          loading: false,
         });
       } catch (error) {
-        console.error('Failed to fetch balance:', error);
-        setWalletData(prev => ({ ...prev, loading: false }));
+        console.error("Failed to fetch balance:", error);
+        setWalletData((prev) => ({ ...prev, loading: false }));
       }
     };
 
@@ -148,7 +149,7 @@ function DashboardLayout() {
         <div className="h-full flex flex-col">
           {/* Logo & Close Button */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-2xl font-bold text-primary">Bill Pay</h1>
+            <h1 className="text-2xl font-bold text-primary">Quick Bills</h1>
             {isMobile && (
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -204,10 +205,13 @@ function DashboardLayout() {
 
           {/* User Profile */}
           <div className="p-4 border-t">
-            <button className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl">
+            <Link
+              to="/profile"
+              className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl"
+            >
               <UserCircleIcon className="w-5 h-5 mr-3" />
               Profile & Settings
-            </button>
+            </Link>
           </div>
         </div>
       </aside>
@@ -250,8 +254,17 @@ function DashboardLayout() {
                 onClick={handleLogout}
                 className="px-4 py-2 text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors flex items-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3zm7 4a1 1 0 1 0-2 0v4a1 1 0 1 0 2 0V7z" clipRule="evenodd"/>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3zm7 4a1 1 0 1 0-2 0v4a1 1 0 1 0 2 0V7z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Logout
               </button>

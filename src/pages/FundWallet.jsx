@@ -151,24 +151,41 @@ function FundWallet() {
     }
   };
 
+  const calculateFee = (amount) => {
+    return (Number(amount) * 0.015).toFixed(2);
+  };
+
   return (
     <div className="max-w-md mx-auto">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Fund Wallet</h1>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
-        {/* Payment Method Section */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Payment Method
-          </label>
-          <div className="p-4 border rounded-lg bg-gray-50 flex items-center">
-            <img src="/paystack-logo.png" alt="Paystack" className="h-8 mr-3" />
-            <div>
-              <p className="font-medium text-gray-900">Paystack</p>
-              <p className="text-sm text-gray-500">
-                Fast & secure payment with cards, bank transfer, or USSD
-              </p>
-            </div>
+        {/* Info Alert - Updated with standard icon */}
+        <div className="mb-6 flex items-start space-x-3 p-4 bg-blue-50 rounded-lg">
+          <svg 
+            className="w-5 h-5 text-blue-500 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div className="text-sm text-blue-700">
+            <p className="font-medium mb-1">Transaction Fees</p>
+            <ul className="list-disc list-inside space-y-1 text-blue-600">
+              <li>A 1.5% processing fee applies to all deposits</li>
+              {amount && (
+                <li className="font-medium">
+                  Fee for ₦{Number(amount).toLocaleString()}: ₦{calculateFee(amount)}
+                </li>
+              )}
+              <li>Instant wallet credit upon successful payment</li>
+            </ul>
           </div>
         </div>
 
@@ -244,10 +261,25 @@ function FundWallet() {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        {/* Note section - Updated with standard icon */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg flex items-start space-x-3">
+          <svg 
+            className="w-5 h-5 text-blue-500 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
           <p className="text-sm text-blue-600">
             <strong>Note:</strong> Minimum funding amount is ₦100. Your wallet
-            will be credited immediately after successful payment.
+            will be credited immediately after successful payment. A 1.5%
+            processing fee applies.
           </p>
         </div>
       </div>

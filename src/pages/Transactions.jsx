@@ -97,7 +97,7 @@ function Transactions() {
     if (transaction.status === "failed") {
       return (
         <div className="text-right">
-          <p className="font-semibold text-yellow-600">Refunded</p>
+          <p className="font-semibold text-yellow-600">Failed</p>
           <p className="text-xs text-gray-500">
             ₦{transaction.amount.toLocaleString()}
           </p>
