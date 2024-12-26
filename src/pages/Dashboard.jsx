@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchUserData } from '../store/slices/authSlice';
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUserData } from "../store/slices/authSlice";
 import {
   WalletIcon,
   ArrowUpIcon,
@@ -12,16 +12,16 @@ import {
 import { walletService } from "../services/walletService";
 import { notify } from "../utils/toast";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
-import WalletCard from '../components/WalletCard';
+import WalletCard from "../components/WalletCard";
 
 function Dashboard() {
   const dispatch = useDispatch();
-  const { user } = useSelector(state => state.auth);
-  
+  const { user } = useSelector((state) => state.auth);
+
   const [walletData, setWalletData] = useState({
     balance: 0,
     lastFunded: null,
-    recentTransactions: []
+    recentTransactions: [],
   });
   const [fundingHistory, setFundingHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,17 +31,17 @@ function Dashboard() {
       try {
         const [balanceData, fundingData] = await Promise.all([
           walletService.getBalance(),
-          walletService.getFundingHistory()
+          walletService.getFundingHistory(),
         ]);
 
         setWalletData({
           balance: balanceData.balance,
           lastFunded: balanceData.lastFunded,
-          recentTransactions: balanceData.recentTransactions
+          recentTransactions: balanceData.recentTransactions,
         });
         setFundingHistory(fundingData);
       } catch (error) {
-        notify.error("Failed to fetch wallet data");
+        // notify.error("Failed to fetch wallet data");
         console.error("Wallet data fetch error:", error);
       } finally {
         setLoading(false);
@@ -53,10 +53,10 @@ function Dashboard() {
 
   // Format date helper
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(date).toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -64,13 +64,15 @@ function Dashboard() {
     {
       id: 1,
       title: "New Features Added",
-      description: "You can now schedule bill payments and track your spending.",
+      description:
+        "You can now schedule bill payments and track your spending.",
       date: new Date(),
     },
     {
       id: 2,
       title: "Wallet Balance Updates",
-      description: "Real-time balance updates and transaction history now available.",
+      description:
+        "Real-time balance updates and transaction history now available.",
       date: new Date(),
     },
   ];
@@ -82,7 +84,7 @@ function Dashboard() {
       href: "/airtime",
       icon: PhoneIcon,
       color: "bg-purple-100 text-purple-600",
-      description: "Purchase airtime for any network"
+      description: "Purchase airtime for any network",
     },
     {
       id: 2,
@@ -90,7 +92,7 @@ function Dashboard() {
       href: "/data",
       icon: WifiIcon,
       color: "bg-blue-100 text-blue-600",
-      description: "Get internet data bundles"
+      description: "Get internet data bundles",
     },
   ];
 
@@ -110,7 +112,7 @@ function Dashboard() {
       </div>
 
       {/* Replace existing wallet card with new component */}
-      <WalletCard 
+      <WalletCard
         balance={walletData.balance}
         lastFunded={walletData.lastFunded}
         loading={loading}
