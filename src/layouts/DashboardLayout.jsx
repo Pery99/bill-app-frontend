@@ -16,6 +16,7 @@ import { logout, fetchUserData } from "../store/slices/authSlice"; // Add fetchU
 import toast from "react-hot-toast";
 import { notify } from "../utils/toast";
 import { walletService } from "../services/walletService";
+import { authUtils } from "../utils/auth";
 
 function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
