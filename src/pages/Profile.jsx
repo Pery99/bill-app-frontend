@@ -78,30 +78,33 @@ function Profile() {
         Profile & Settings
       </h1>
 
-      {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm mb-6">
-        <div className="border-b">
-          <nav className="flex -mb-px">
+      {/* Updated Tabs for better mobile responsiveness */}
+      <div className="bg-white rounded-xl shadow-sm mb-6 overflow-x-auto">
+        <div className="border-b min-w-full">
+          <nav className="flex">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`group inline-flex items-center px-6 py-4 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+                className={`
+                  group inline-flex items-center px-4 sm:px-6 py-4 border-b-2 font-medium text-sm whitespace-nowrap
+                  ${
+                    activeTab === tab.id
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }
+                `}
               >
-                <tab.icon className="w-5 h-5 mr-2" />
-                {tab.name}
+                <tab.icon className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span>{tab.name}</span>
               </button>
             ))}
           </nav>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      {/* Content - Add padding for mobile */}
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         {activeTab === "profile" && (
           <form onSubmit={handleProfileUpdate} className="space-y-6">
             <div className="space-y-2">
