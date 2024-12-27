@@ -52,37 +52,38 @@ function Register() {
       const formattedData = {
         fullname: formData.fullname.trim(),
         email: formData.email.trim().toLowerCase(),
-        password: formData.password
+        password: formData.password,
       };
 
       const result = await dispatch(register(formattedData)).unwrap();
-      
+
       if (result?.token) {
         notify.success("Registration successful!");
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       } else {
-        throw new Error('Invalid registration response');
+        throw new Error("Invalid registration response");
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      
+      console.error("Registration error:", error);
+
       // Handle email already exists error
-      if (typeof error === 'string' && (
-        error.toLowerCase().includes('already') || 
-        error.toLowerCase().includes('exists') ||
-        error.toLowerCase().includes('duplicate')
-      )) {
-        setErrors(prev => ({
+      if (
+        typeof error === "string" &&
+        (error.toLowerCase().includes("already") ||
+          error.toLowerCase().includes("exists") ||
+          error.toLowerCase().includes("duplicate"))
+      ) {
+        setErrors((prev) => ({
           ...prev,
-          email: "This email is already registered. Please login instead."
+          email: "This email is already registered. Please login instead.",
         }));
         return;
       }
 
       // Handle other errors
       notify.error(
-        typeof error === 'string' 
-          ? error 
+        typeof error === "string"
+          ? error
           : "Registration failed. Please try again."
       );
     }

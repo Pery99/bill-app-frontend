@@ -161,7 +161,7 @@ function Dashboard() {
               Recent Transactions
             </h2>
             <Link
-              to="dashboard/transactions"
+              to="/dashboard/transactions"
               className="text-sm text-primary hover:text-primary-600"
             >
               View all →
