@@ -43,7 +43,6 @@ function DashboardLayout() {
       disabled: true,
     },
     { name: "Transactions", href: "/transactions", icon: ClockIcon },
-    { name: "Customer Care", href: "/customer-care", icon: UserCircleIcon },
   ];
 
   // Update selector to include userFetched flag
@@ -237,24 +236,6 @@ function DashboardLayout() {
               >
                 <Bars3Icon className="w-6 h-6" />
               </button>
-              {/* User Greeting */}
-              <div className="flex items-center space-x-3">
-                {/* <div className="hidden sm:block">
-                  <p className="text-sm text-gray-500">
-                    Welcome back,{" "}
-                    <span className="text-base font-semibold text-gray-900">
-                      {displayName}
-                    </span>
-                  </p>
-                </div> */}
-                <div className="flex items-center sm:hidden">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-semibold text-sm">
-                      {displayName[0]?.toUpperCase() || "U"}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Right side actions */}
@@ -285,6 +266,18 @@ function DashboardLayout() {
         <main className="p-4 lg:p-8">
           <Outlet />
         </main>
+      </div>
+
+      {/* Add floating customer care icon */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <a
+          href="https://wa.me/2347044299948" // Replace with actual WhatsApp number
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center w-14 h-14 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-colors"
+        >
+          <UserCircleIcon className="w-7 h-7 text-white" />
+        </a>
       </div>
     </div>
   );

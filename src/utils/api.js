@@ -2,8 +2,8 @@ import axios from "axios";
 import { authUtils } from "./auth";
 
 const api = axios.create({
-  // baseURL: "http://localhost:3000/api",
-  baseURL: "https://bill-app-api.onrender.com/api",
+  baseURL: "http://localhost:3000/api",
+  // baseURL: "https://bill-app-api.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

@@ -19,5 +19,5 @@ export const walletService = {
       console.error("Failed to fetch funding history:", error);
       throw error;
     }
-  }
+  },
 };

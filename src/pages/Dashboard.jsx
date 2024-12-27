@@ -63,9 +63,9 @@ function Dashboard() {
   const updates = [
     {
       id: 1,
-      title: "New Features Added",
+      title: "Data Plans Now Available",
       description:
-        "You can now schedule bill payments and track your spending.",
+        "Get the best data plans for all networks at the best prices.",
       date: new Date(),
     },
     {
@@ -102,7 +102,7 @@ function Dashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Hello, {user?.fullname?.split(" ")[0] || "there"}! 👋
+            Hello, {user?.fullname.split(" ")[0] || "there"}! 👋
           </h1>
           <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
         </div>

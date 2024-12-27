@@ -100,7 +100,7 @@ function Data() {
     e.preventDefault();
     setLoading(true);
     console.log("Form data:", formData);
-    
+
     if (!validateForm()) return;
     try {
       const response = await api.post("/transactions/data", formData);
@@ -144,6 +144,7 @@ function Data() {
         {loading && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div>fetching data plans</div>
           </div>
         )}
 

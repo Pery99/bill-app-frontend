@@ -16,7 +16,7 @@ import TV from "./pages/TV";
 import Electricity from "./pages/Electricity";
 import Transactions from "./pages/Transactions";
 import Profile from "./pages/Profile";
-import CustomerCare from "./pages/CustomerCare";
+// Remove CustomerCare import
 import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -39,7 +39,7 @@ const AppRoutes = () => {
           <Route path="/electricity" element={<Electricity />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/customer-care" element={<CustomerCare />} />
+          {/* Remove CustomerCare route */}
         </Route>
       </Route>
     </Routes>
