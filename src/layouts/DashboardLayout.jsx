@@ -35,9 +35,15 @@ function DashboardLayout() {
     { name: "Fund Wallet", href: "/fund-wallet", icon: WalletIcon },
     { name: "Buy Airtime", href: "/airtime", icon: PhoneIcon },
     { name: "Buy Data", href: "/data", icon: WifiIcon },
-    { name: "TV Subscription", href: "/tv", icon: TvIcon },
-    { name: "Buy Electricity", href: "/electricity", icon: LightBulbIcon },
+    { name: "TV Subscription", href: "/tv", icon: TvIcon, disabled: true },
+    {
+      name: "Buy Electricity",
+      href: "/electricity",
+      icon: LightBulbIcon,
+      disabled: true,
+    },
     { name: "Transactions", href: "/transactions", icon: ClockIcon },
+    { name: "Customer Care", href: "/customer-care", icon: UserCircleIcon },
   ];
 
   // Update selector to include userFetched flag
@@ -186,16 +192,19 @@ function DashboardLayout() {
             {navigation.map((item) => (
               <Link
                 key={item.name}
-                to={item.href}
+                to={item.disabled ? "#" : item.href}
                 className={`
                   flex items-center px-4 py-3 text-sm font-medium rounded-xl
                   transition-colors duration-200
                   ${
-                    location.pathname === item.href
+                    item.disabled
+                      ? "text-gray-400 cursor-not-allowed"
+                      : location.pathname === item.href
                       ? "bg-primary text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   }
                 `}
+                onClick={(e) => item.disabled && e.preventDefault()}
               >
                 <item.icon className="w-5 h-5 mr-3" />
                 {item.name}
