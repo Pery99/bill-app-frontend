@@ -81,7 +81,7 @@ function Dashboard() {
     {
       id: 1,
       name: "Buy Airtime",
-      href: "/airtime",
+      href: "/dashboard/airtime",
       icon: PhoneIcon,
       color: "bg-purple-100 text-purple-600",
       description: "Purchase airtime for any network",
@@ -89,7 +89,7 @@ function Dashboard() {
     {
       id: 2,
       name: "Buy Data",
-      href: "/data",
+      href: "/dashboard/data",
       icon: WifiIcon,
       color: "bg-blue-100 text-blue-600",
       description: "Get internet data bundles",
@@ -161,7 +161,7 @@ function Dashboard() {
               Recent Transactions
             </h2>
             <Link
-              to="/transactions"
+              to="dashboard/transactions"
               className="text-sm text-primary hover:text-primary-600"
             >
               View all →

@@ -12,9 +12,9 @@ function Login() {
   const { loading, token } = useSelector(state => state.auth);
 
   useEffect(() => {
-    // Redirect if already logged in
-    if (token) {
-      navigate('/', { replace: true });
+    // Only redirect if token exists and we're not on the login page
+    if (token && location.pathname === '/login') {
+      navigate('/dashboard', { replace: true });
     }
   }, [token, navigate]);
 
@@ -35,6 +35,10 @@ function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSuccess = () => {
+    navigate("/dashboard", { replace: true });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -43,7 +47,7 @@ function Login() {
 
     if (result.meta.requestStatus === 'fulfilled') {
       notify.success("Welcome back!");
-      navigate("/", { replace: true });
+      handleSuccess();
     } else if (result.payload) {
       notify.error(result.payload);
     }

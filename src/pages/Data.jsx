@@ -78,7 +78,7 @@ function Data() {
     } catch (error) {
       console.error("Failed to fetch data plans:", error);
       notify.error(
-        error.response?.data?.message || "Failed to fetch data plans"
+        error.response?.data?.error || "Failed to fetch data plans"
       );
       setDataPlans([]);
     } finally {
@@ -142,9 +142,11 @@ function Data() {
 
       <div className="bg-white rounded-xl shadow-sm p-6">
         {loading && (
-          <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <div>fetching data plans</div>
+          <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary border-opacity-75"></div>
+            <span className="text-primary text-lg font-semibold">
+              Fetching data plans...
+            </span>
           </div>
         )}
 

@@ -31,18 +31,18 @@ function DashboardLayout() {
 
   // Fix: Define navigation array
   const navigation = [
-    { name: "Dashboard", href: "/", icon: WalletIcon },
-    { name: "Fund Wallet", href: "/fund-wallet", icon: WalletIcon },
-    { name: "Buy Airtime", href: "/airtime", icon: PhoneIcon },
-    { name: "Buy Data", href: "/data", icon: WifiIcon },
-    { name: "TV Subscription", href: "/tv", icon: TvIcon, disabled: true },
+    { name: "Dashboard", href: "/dashboard", icon: WalletIcon },
+    { name: "Fund Wallet", href: "/dashboard/fund-wallet", icon: WalletIcon },
+    { name: "Buy Airtime", href: "/dashboard/airtime", icon: PhoneIcon },
+    { name: "Buy Data", href: "/dashboard/data", icon: WifiIcon },
+    { name: "TV Subscription", href: "/dashboard/tv", icon: TvIcon, disabled: true },
     {
       name: "Buy Electricity",
-      href: "/electricity",
+      href: "/dashboard/electricity",
       icon: LightBulbIcon,
       disabled: true,
     },
-    { name: "Transactions", href: "/transactions", icon: ClockIcon },
+    { name: "Transactions", href: "/dashboard/transactions", icon: ClockIcon },
   ];
 
   // Update selector to include userFetched flag
@@ -214,7 +214,7 @@ function DashboardLayout() {
           {/* User Profile */}
           <div className="p-4 border-t">
             <Link
-              to="/profile"
+              to="dashboard/profile"
               className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl"
             >
               <UserCircleIcon className="w-5 h-5 mr-3" />

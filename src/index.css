@@ -1,8 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+}
 
 @layer components {
   .input-field {
@@ -12,8 +18,15 @@
   }
 
   .btn-primary {
-    @apply w-full px-4 py-3 bg-primary text-white rounded-lg font-medium 
-    hover:bg-primary-600 transition-colors;
+    @apply inline-flex items-center justify-center px-8 py-3 border border-transparent 
+           text-base font-medium rounded-lg text-white bg-primary hover:bg-primary-600 
+           transition-all duration-200 hover:scale-105 shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-8 py-3 border border-primary 
+           text-base font-medium rounded-lg text-primary bg-white hover:bg-primary-50 
+           transition-all duration-200 shadow-sm;
   }
 
   .link-text {
@@ -22,5 +35,34 @@
 
   .card {
     @apply bg-surface rounded-xl p-8 shadow-2xl;
+  }
+
+  .feature-card {
+    @apply relative overflow-hidden group bg-white p-6 rounded-2xl border border-gray-100 
+           hover:border-primary/20 hover:shadow-lg transition-all duration-300;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-gray-900 mb-4;
+  }
+
+  .section-description {
+    @apply text-lg text-gray-600 max-w-3xl mx-auto;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-br from-primary/5 via-white to-primary/5;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent;
+  }
+
+  .loading-spinner {
+    @apply animate-spin rounded-full h-12 w-12 border-b-2 border-primary;
+  }
+
+  .app-loading {
+    @apply min-h-screen flex items-center justify-center bg-gray-50;
   }
 }

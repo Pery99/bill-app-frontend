@@ -6,6 +6,7 @@ import { store, persistor } from "./store";
 import { Toaster } from "react-hot-toast";
 
 // Import components
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -16,7 +17,7 @@ import TV from "./pages/TV";
 import Electricity from "./pages/Electricity";
 import Transactions from "./pages/Transactions";
 import Profile from "./pages/Profile";
-// Remove CustomerCare import
+import NotFound from "./pages/NotFound";
 import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -25,23 +26,31 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<Home />} />
+      
+      {/* Auth routes with layout */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
+
+      {/* Protected dashboard routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/fund-wallet" element={<FundWallet />} />
-          <Route path="/airtime" element={<Airtime />} />
-          <Route path="/data" element={<Data />} />
-          <Route path="/tv" element={<TV />} />
-          <Route path="/electricity" element={<Electricity />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/profile" element={<Profile />} />
-          {/* Remove CustomerCare route */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/fund-wallet" element={<FundWallet />} />
+          <Route path="/dashboard/airtime" element={<Airtime />} />
+          <Route path="/dashboard/data" element={<Data />} />
+          <Route path="/dashboard/tv" element={<TV />} />
+          <Route path="/dashboard/electricity" element={<Electricity />} />
+          <Route path="/dashboard/transactions" element={<Transactions />} />
+          <Route path="/dashboard/profile" element={<Profile />} />
         </Route>
       </Route>
+
+      {/* 404 route - must be last */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
