@@ -36,8 +36,8 @@ function Profile() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.put("/user/profile", profileData);
-      notify.success("Profile updated successfully");
+      const response = await api.put("/auth/update-profile", profileData);
+      notify.success("Profile updated successfully, kindly reload");
     } catch (error) {
       notify.error(error.response?.data?.message || "Failed to update profile");
     } finally {

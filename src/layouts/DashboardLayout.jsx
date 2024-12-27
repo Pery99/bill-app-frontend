@@ -10,6 +10,7 @@ import {
   XMarkIcon,
   UserCircleIcon,
   ClockIcon,
+  ChatBubbleLeftRightIcon, // Add this import
 } from "@heroicons/react/24/outline";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, fetchUserData } from "../store/slices/authSlice"; // Add fetchUserData import
@@ -268,15 +269,16 @@ function DashboardLayout() {
         </main>
       </div>
 
-      {/* Add floating customer care icon */}
+      {/* Updated floating customer care icon */}
       <div className="fixed bottom-8 right-8 z-50">
         <a
-          href="https://wa.me/2347044299948" // Replace with actual WhatsApp number
+          href="https://wa.me/2347044299948"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-14 h-14 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-colors"
+          className="group flex items-center justify-center w-14 h-14 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105"
         >
-          <UserCircleIcon className="w-7 h-7 text-white" />
+          <ChatBubbleLeftRightIcon className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+          <span className="sr-only">Chat with us on WhatsApp</span>
         </a>
       </div>
     </div>

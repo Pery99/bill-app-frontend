@@ -17,6 +17,19 @@ import {
 
 function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      notify.success("Thanks for subscribing!");
+      setEmail("");
+      setIsSubmitting(false);
+    }, 1000);
+  };
 
   const services = [
     {
@@ -211,50 +224,100 @@ function Home() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              All Your Bills in One Place
+      {/* Redesigned Services Section */}
+      <section id="services" className="py-24 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <span className="text-primary font-semibold text-sm tracking-wider uppercase">Our Services</span>
+            <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">
+              Everything You Need in One Place
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Pay all your bills from one dashboard. No more juggling between apps.
-            </p>
+            <div className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+              Access all your essential services through our secure platform
+            </div>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service) => (
-              <div key={service.name} className="group relative bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all">
-                <div className={`${service.color} rounded-xl p-3 inline-flex mb-4`}>
-                  <service.icon className="w-6 h-6" />
+              <div
+                key={service.name}
+                className="relative bg-white rounded-2xl p-8 hover:shadow-xl transition-all duration-300 border border-gray-100 group overflow-hidden"
+              >
+                {/* Decorative gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                {/* Icon with colored background */}
+                <div className={`${service.color} rounded-2xl p-4 relative mb-6 transform group-hover:scale-110 transition-transform`}>
+                  <service.icon className="w-7 h-7" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
-                <p className="text-gray-600">{service.description}</p>
+
+                <div className="relative">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {service.name}
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {service.description}
+                  </p>
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center text-primary font-medium group/link"
+                  >
+                    Get Started
+                    <svg
+                      className="w-4 h-4 ml-2 transform group-hover/link:translate-x-1 transition-transform"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose QuickBills?
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              We've built the most reliable bill payment platform in Nigeria
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature) => (
-              <div key={feature.title} className="bg-white p-6 rounded-xl">
-                <feature.icon className="w-8 h-8 text-primary mb-4" />
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+      {/* Redesigned Features Section */}
+      <section id="features" className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-24 items-center">
+            {/* Left side content */}
+            <div>
+              <span className="text-primary font-semibold text-sm tracking-wider uppercase">Why Choose Us</span>
+              <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">
+                Features that set us apart
+              </h2>
+              <p className="mt-4 text-lg text-gray-600 leading-relaxed">
+                Experience the future of bill payments with our innovative platform. 
+                We've built the most reliable solution for all your payment needs.
+              </p>
+            </div>
+
+            {/* Right side features grid */}
+            <div className="mt-12 lg:mt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                {features.map((feature) => (
+                  <div
+                    key={feature.title}
+                    className="relative group"
+                  >
+                    <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 to-blue-500/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                    <div className="relative bg-white p-6 rounded-xl border border-gray-100 h-full">
+                      <feature.icon className="w-8 h-8 text-primary mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
@@ -273,7 +336,7 @@ function Home() {
           </Link>
         </div>
       </section>
-
+     
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
