@@ -230,14 +230,14 @@ function DashboardLayout() {
               </button>
               {/* User Greeting */}
               <div className="flex items-center space-x-3">
-                <div className="hidden sm:block">
+                {/* <div className="hidden sm:block">
                   <p className="text-sm text-gray-500">
                     Welcome back,{" "}
                     <span className="text-base font-semibold text-gray-900">
                       {displayName}
                     </span>
                   </p>
-                </div>
+                </div> */}
                 <div className="flex items-center sm:hidden">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-primary font-semibold text-sm">

@@ -161,7 +161,7 @@ function FundWallet() {
 
       <div className="bg-white rounded-xl shadow-sm p-6">
         {/* Info Alert - Updated with standard icon */}
-        <div className="mb-6 flex items-start space-x-3 p-4 bg-blue-50 rounded-lg">
+        {/* <div className="mb-6 flex items-start space-x-3 p-4 bg-blue-50 rounded-lg">
           <svg 
             className="w-5 h-5 text-blue-500 mt-0.5"
             fill="none"
@@ -182,7 +182,7 @@ function FundWallet() {
               <li>Instant wallet credit upon successful payment</li>
             </ul>
           </div>
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -258,7 +258,7 @@ function FundWallet() {
 
         {/* Note section - Updated with standard icon */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg flex items-start space-x-3">
-          <svg 
+          <svg
             className="w-5 h-5 text-blue-500 mt-0.5"
             fill="none"
             stroke="currentColor"
