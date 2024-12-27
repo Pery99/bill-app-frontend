@@ -20,9 +20,9 @@ function WalletCard({ balance, lastFunded, loading, formatDate }) {
 
       <p className="text-4xl font-bold text-white mb-4">
         {loading ? (
-          <span className="text-2xl">Loading...</span>
+          <span className="text-2xl animate-fade-in">Loading...</span>
         ) : (
-          `₦${balance.toLocaleString()}`
+          `₦${balance.toFixed(2).toLocaleString()}`
         )}
       </p>
 

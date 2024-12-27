@@ -36,7 +36,12 @@ function DashboardLayout() {
     { name: "Fund Wallet", href: "/dashboard/fund-wallet", icon: WalletIcon },
     { name: "Buy Airtime", href: "/dashboard/airtime", icon: PhoneIcon },
     { name: "Buy Data", href: "/dashboard/data", icon: WifiIcon },
-    { name: "TV Subscription", href: "/dashboard/tv", icon: TvIcon, disabled: true },
+    {
+      name: "TV Subscription",
+      href: "/dashboard/tv",
+      icon: TvIcon,
+      disabled: true,
+    },
     {
       name: "Buy Electricity",
       href: "/dashboard/electricity",
@@ -172,9 +177,9 @@ function DashboardLayout() {
               <p className="text-sm text-gray-600">Wallet Balance</p>
               <p className="text-2xl font-bold text-primary">
                 {walletData.loading ? (
-                  <span className="text-lg">Loading...</span>
+                  <span className="text-lg animate-fade-in-up">Loading...</span>
                 ) : (
-                  `₦${walletData.balance.toLocaleString()}`
+                  `₦${walletData.balance.toFixed(2).toLocaleString()}`
                 )}
               </p>
               <Link
@@ -275,7 +280,7 @@ function DashboardLayout() {
           href="https://wa.me/2347044299948"
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center justify-center w-14 h-14 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105"
+          className="group flex items-center justify-center w-14 h-14 bg-green-00 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105"
         >
           <ChatBubbleLeftRightIcon className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
           <span className="sr-only">Chat with us on WhatsApp</span>
