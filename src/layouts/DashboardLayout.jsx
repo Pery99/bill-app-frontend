@@ -280,7 +280,7 @@ function DashboardLayout() {
           href="https://wa.me/2347044299948"
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center justify-center w-14 h-14 bg-green-00 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105"
+          className="group flex items-center justify-center w-14 h-14 bg-primary rounded-full shadow-lg transition-all duration-300 hover:scale-105"
         >
           <ChatBubbleLeftRightIcon className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
           <span className="sr-only">Chat with us on WhatsApp</span>

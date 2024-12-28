@@ -106,7 +106,7 @@ function Dashboard() {
           </h1>
           <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
         </div>
-        <Link to="/fund-wallet" className="btn-primary !px-6 !w-auto">
+        <Link to="/dashboard/fund-wallet" className="btn-primary !px-6 !w-auto">
           Fund Wallet
         </Link>
       </div>
