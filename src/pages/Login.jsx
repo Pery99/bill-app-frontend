@@ -2,14 +2,18 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
 import { notify } from "../utils/toast";
-import { login } from '../store/slices/authSlice';
+import { loginUser, selectors } from '../store/slices/authSlice';
 
 function Login() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ 
+    email: "", 
+    password: "",
+    remember: true // Add remember me state
+  });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, token } = useSelector(state => state.auth);
+  const { loading, token } = useSelector(selectors.selectAuth);
 
   useEffect(() => {
     // Only redirect if token exists and we're not on the login page
@@ -43,7 +47,11 @@ function Login() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const result = await dispatch(login(formData));
+    const result = await dispatch(loginUser({
+      email: formData.email,
+      password: formData.password,
+      remember: formData.remember // Pass remember preference
+    }));
 
     if (result.meta.requestStatus === 'fulfilled') {
       notify.success("Welcome back!");
@@ -99,6 +107,18 @@ function Login() {
         </div>
 
         <div className="flex items-center justify-between">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              className="form-checkbox text-primary"
+              checked={formData.remember}
+              onChange={(e) => setFormData({
+                ...formData,
+                remember: e.target.checked
+              })}
+            />
+            <span className="ml-2 text-sm text-gray-600">Remember me</span>
+          </label>
           <Link to="/forgot-password" className="link-text">
             Forgot password?
           </Link>

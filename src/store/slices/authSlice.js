@@ -1,16 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../utils/api";
+import { authService } from "../../services/authService";
 import { authUtils } from "../../utils/auth";
 
 const initialState = {
   user: null,
-  token: authUtils.getToken(), // This will now validate the token
+  token: null, // Don't get token here, let persist handle it
   loading: false,
   error: null,
   userFetched: false,
 };
 
-export const login = createAsyncThunk(
+export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ email, password, remember = true }, { rejectWithValue }) => {
     try {
@@ -18,6 +18,7 @@ export const login = createAsyncThunk(
       const { token, user } = response.data;
 
       if (token && user) {
+        // Pass remember preference to setToken
         authUtils.setToken(token, remember);
         return { user, token };
       }
@@ -32,19 +33,9 @@ export const fetchUserData = createAsyncThunk(
   "auth/fetchUserData",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/auth/me");
-      if (!response.data) {
-        throw new Error("No user data received");
-      }
-      return response.data;
+      return await authService.getCurrentUser();
     } catch (error) {
-      if (!error.response) {
-        throw error; // Network or other errors
-      }
-      return rejectWithValue({
-        status: error.response.status,
-        message: error.response.data?.message || "Failed to fetch user data",
-      });
+      return rejectWithValue(error.message || "Failed to fetch user data");
     }
   }
 );
@@ -68,15 +59,12 @@ export const register = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      // console.log('Sending registration data:', userData);
-
       const response = await api.post("/auth/register", {
         fullname: userData.fullname,
         email: userData.email,
         password: userData.password,
       });
 
-      // console.log('Registration response:', response.data);
       if (!response.data) {
         throw new Error("No response data received");
       }
@@ -113,14 +101,16 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    // Remove token clearing from resetAuth unless explicitly logging out
     resetAuth: (state) => {
       state.user = null;
       state.token = null;
       state.loading = false;
       state.error = null;
       state.userFetched = false;
-      // Clear stored token
-      authUtils.removeToken();
+    },
+    setAuthError: (state, action) => {
+      state.error = action.payload;
     },
     initAuth: (state) => {
       state.token = authUtils.getToken();
@@ -129,16 +119,26 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.pending, (state) => {
+      .addCase("persist/REHYDRATE", (state, action) => {
+        // Restore persisted state but validate token
+        if (action.payload?.auth?.token) {
+          const isValid = authUtils.isAuthenticated();
+          if (!isValid) {
+            state.token = null;
+            state.user = null;
+          }
+        }
+      })
+      .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
       })
-      .addCase(login.rejected, (state, action) => {
+      .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
@@ -150,7 +150,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.userFetched = true; // Set the flag when user is fetched
-        console.log("Updated user state:", action.payload); // Debug log
       })
       .addCase(fetchUserData.rejected, (state, action) => {
         state.loading = false;
@@ -192,5 +191,16 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetAuth, initAuth } = authSlice.actions;
+// Single consolidated export section
+export const { resetAuth, setAuthError, initAuth } = authSlice.actions;
+
+// Selectors
+export const selectors = {
+  selectAuth: (state) => state.auth,
+  selectUser: (state) => state.auth.user,
+  selectIsAuthenticated: (state) => Boolean(state.auth.token),
+  selectAuthLoading: (state) => state.auth.loading,
+  selectAuthError: (state) => state.auth.error,
+};
+
 export default authSlice.reducer;

@@ -1,15 +1,18 @@
 import axios from "axios";
 import { authUtils } from "./auth";
+import { store } from "../store";
+import { resetAuth } from "../store/slices/authSlice";
 
 const api = axios.create({
-  // baseURL: "http://localhost:3000/api",
   baseURL: "https://bill-app-api.onrender.com/api",
+  // baseURL: "http://localhost:3000/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = authUtils.getToken();
@@ -24,9 +27,24 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      authUtils.removeToken();
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Only clear auth on specific 401 conditions
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Attempt token refresh
+        const newToken = await authUtils.refreshTokenMethods.refreshToken();
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        // Only clear auth data if refresh token fails
+        store.dispatch(resetAuth());
+      }
     }
     return Promise.reject(error);
   }

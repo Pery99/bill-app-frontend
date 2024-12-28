@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchUserData } from "../store/slices/authSlice";
+import { selectors } from "../store/slices/authSlice";
 import {
   WalletIcon,
   ArrowUpIcon,
@@ -15,8 +15,7 @@ import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
 import WalletCard from "../components/WalletCard";
 
 function Dashboard() {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector(selectors.selectAuth);
 
   const [walletData, setWalletData] = useState({
     balance: 0,
@@ -101,8 +100,8 @@ function Dashboard() {
       {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-          {user?.fullname.split(" ")[0] || "there"}! 👋
+          <h1 className="text-2xl font-bold text-gray-900 capitalize">
+            {user?.fullname.split(" ")[0] || "Hey"}! 👋
           </h1>
           <p className="text-gray-500 mt-1">Welcome to your dashboard</p>
         </div>

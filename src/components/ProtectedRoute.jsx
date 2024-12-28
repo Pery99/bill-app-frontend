@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserData, resetAuth } from "../store/slices/authSlice";
+import { fetchUserData, resetAuth, selectors } from "../store/slices/authSlice";
 import { authUtils } from "../utils/auth";
 import AuthInitializer from "./AuthInitializer";
 
@@ -15,9 +15,7 @@ function ProtectedRoute() {
 
 function ProtectedRouteContent() {
   const dispatch = useDispatch();
-  const { user, loading, userFetched, token } = useSelector(
-    (state) => state.auth
-  );
+  const { user, loading, userFetched, token } = useSelector(selectors.selectAuth);
 
   const validateAndFetchUser = useCallback(async () => {
     if (!authUtils.isAuthenticated()) {
