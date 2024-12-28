@@ -4,7 +4,8 @@ import { store } from "../store";
 import { resetAuth } from "../store/slices/authSlice";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  // baseURL: "http://localhost:3000/api",
+  baseURL: "https://bill-app-api.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
