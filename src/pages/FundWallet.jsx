@@ -76,7 +76,7 @@ function FundWallet() {
       // Fetch updated balance
       const newBalance = await walletService.getBalance();
       notify.success("Payment successful! Your wallet has been credited.");
-      navigate("/");
+      navigate("/dashboard");
       setAmount("");
     } catch (error) {
       console.error("Error updating balance:", error);

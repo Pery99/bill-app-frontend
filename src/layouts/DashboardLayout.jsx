@@ -183,7 +183,7 @@ function DashboardLayout() {
                 )}
               </p>
               <Link
-                to="/fund-wallet"
+                to="/dashboard/fund-wallet"
                 className="mt-3 text-sm text-primary font-medium hover:text-primary-600 inline-flex items-center"
               >
                 Fund Wallet
