@@ -1,21 +1,19 @@
 import axios from "axios";
-import { authUtils } from "./auth";
+import { TOKEN_KEY } from "./constants";
 import { store } from "../store";
 import { resetAuth } from "../store/slices/authSlice";
 
 const api = axios.create({
-  baseURL: "https://bill-app-api.onrender.com/api",
-  // baseURL: "http://localhost:3000/api",
+  baseURL: "http://localhost:3000/api",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = authUtils.getToken();
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

@@ -1,15 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
-
-import authReducer from './slices/authSlice';
+import { authUtils } from '../utils/auth';
+import authReducer, { fetchUserData } from './slices/authSlice';
 
 const persistConfig = {
   key: 'root',
   storage,
-  stateReconciler: autoMergeLevel2,
-  whitelist: ['auth'], // Only persist auth state
+  whitelist: ['auth'],
 };
 
 const persistedReducer = persistReducer(persistConfig, authReducer);
@@ -21,9 +19,17 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
+});
+
+// Initialize auth state when store is created
+store.subscribe(() => {
+  const state = store.getState();
+  if (state.auth.token && !state.auth.user && !state.auth.loading && !state.auth.userFetched) {
+    store.dispatch(fetchUserData());
+  }
 });
 
 export const persistor = persistStore(store);

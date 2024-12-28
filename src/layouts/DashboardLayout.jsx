@@ -131,7 +131,7 @@ function DashboardLayout() {
       authUtils.clearAuthData(); // Add this line
       navigate("/login", { replace: true });
     } catch (error) {
-      notify.error("Failed to logout");
+      // notify.error("Failed to logout");
       // Force logout on error
       authUtils.clearAuthData();
       navigate("/login", { replace: true });

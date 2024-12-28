@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { authService } from "../../services/authService";
 import { authUtils } from "../../utils/auth";
+import { TOKEN_KEY } from "../../utils/constants";
 
 const initialState = {
   user: null,
-  token: null, // Don't get token here, let persist handle it
+  token: localStorage.getItem(TOKEN_KEY), // Direct access initially
   loading: false,
   error: null,
   userFetched: false,
@@ -120,13 +121,14 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase("persist/REHYDRATE", (state, action) => {
-        // Restore persisted state but validate token
-        if (action.payload?.auth?.token) {
-          const isValid = authUtils.isAuthenticated();
-          if (!isValid) {
-            state.token = null;
-            state.user = null;
-          }
+        const storedToken = localStorage.getItem(TOKEN_KEY);
+        if (storedToken) {
+          state.token = storedToken;
+          state.userFetched = false;
+        } else {
+          state.token = null;
+          state.user = null;
+          state.userFetched = false;
         }
       })
       .addCase(loginUser.pending, (state) => {
