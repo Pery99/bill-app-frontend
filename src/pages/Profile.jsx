@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from 'react-redux';
 import { notify } from "../utils/toast";
 import api from "../utils/api";
+import { selectors, fetchUserData } from '../store/slices/authSlice';
 import {
   UserCircleIcon,
   ShieldCheckIcon,
@@ -9,7 +10,8 @@ import {
 } from "@heroicons/react/24/outline";
 
 function Profile() {
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user } = useSelector(selectors.selectAuth);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -38,6 +40,8 @@ function Profile() {
     try {
       const response = await api.put("/auth/update-profile", profileData);
       notify.success("Profile updated successfully, kindly reload");
+      // Refresh user data after update
+      dispatch(fetchUserData());
     } catch (error) {
       notify.error(error.response?.data?.message || "Failed to update profile");
     } finally {

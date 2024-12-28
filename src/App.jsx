@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "./store";
 import { Toaster } from "react-hot-toast";
+import AuthInitializer from "./components/AuthInitializer";
 
 // Import components
 import Home from "./pages/Home";
@@ -71,10 +72,12 @@ function App() {
         }
         persistor={persistor}
       >
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster position="top-right" />
-        </BrowserRouter>
+        <AuthInitializer>
+          <BrowserRouter>
+            <AppRoutes />
+            <Toaster position="top-right" />
+          </BrowserRouter>
+        </AuthInitializer>
       </PersistGate>
     </Provider>
   );

@@ -1,15 +1,23 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { initAuth } from '../store/slices/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserData, selectors } from '../store/slices/authSlice';
+import { authUtils } from '../utils/auth';
 
-function AuthInitializer({ children }) {
+const AuthInitializer = ({ children }) => {
   const dispatch = useDispatch();
+  const { token, userFetched } = useSelector(selectors.selectAuth);
 
   useEffect(() => {
-    dispatch(initAuth());
-  }, [dispatch]);
+    const initializeAuth = async () => {
+      if (token && !userFetched && authUtils.isAuthenticated()) {
+        await dispatch(fetchUserData());
+      }
+    };
+
+    initializeAuth();
+  }, [dispatch, token, userFetched]);
 
   return children;
-}
+};
 
 export default AuthInitializer;
