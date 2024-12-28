@@ -77,9 +77,7 @@ function Data() {
       }
     } catch (error) {
       console.error("Failed to fetch data plans:", error);
-      notify.error(
-        error.response?.data?.error || "Failed to fetch data plans"
-      );
+      notify.error(error.response?.data?.error || "Failed to fetch data plans");
       setDataPlans([]);
     } finally {
       setLoading(false);
@@ -126,7 +124,8 @@ function Data() {
       !formData.mobile_number ||
       !/^[0-9]{11}$/.test(formData.mobile_number)
     ) {
-      notify.error("Please enter a valid phone number");
+      setLoading(false);
+      notify.error('Invalid number')
       return false;
     }
     if (!formData.plan) {
@@ -145,7 +144,7 @@ function Data() {
           <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary border-opacity-75"></div>
             <span className="text-primary text-lg font-semibold">
-              Fetching data plans...
+              Please wait...
             </span>
           </div>
         )}
