@@ -19,6 +19,7 @@ function Dashboard() {
 
   const [walletData, setWalletData] = useState({
     balance: 0,
+    points: 0, // Add points to state
     lastFunded: null,
     recentTransactions: [],
   });
@@ -35,6 +36,7 @@ function Dashboard() {
 
         setWalletData({
           balance: balanceData.balance,
+          points: balanceData.points,
           lastFunded: balanceData.lastFunded,
           recentTransactions: balanceData.recentTransactions,
         });
@@ -57,6 +59,19 @@ function Dashboard() {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const handlePointsConverted = async (data) => {
+    try {
+      const balanceData = await walletService.getBalance();
+      setWalletData((prev) => ({
+        ...prev,
+        balance: balanceData.balance,
+        points: balanceData.points,
+      }));
+    } catch (error) {
+      console.error("Failed to update balance after points conversion:", error);
+    }
   };
 
   const updates = [
@@ -113,9 +128,11 @@ function Dashboard() {
       {/* Replace existing wallet card with new component */}
       <WalletCard
         balance={walletData.balance}
+        points={walletData.points}
         lastFunded={walletData.lastFunded}
         loading={loading}
         formatDate={formatDate}
+        onPointsConverted={handlePointsConverted}
       />
 
       {/* Quick Links Section */}
@@ -199,7 +216,7 @@ function Dashboard() {
                   }`}
                 >
                   {transaction.transaction_type === "credit" ? "+" : "-"}₦
-                  {transaction.amount.toLocaleString()}
+                  {transaction?.amount?.toFixed(2).toLocaleString()}
                 </span>
               </div>
             ))}

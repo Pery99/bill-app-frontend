@@ -1,39 +1,96 @@
-import { WalletIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import {
+  WalletIcon,
+  GiftIcon,
+  ArrowPathRoundedSquareIcon,
+} from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
+import ConvertPointsModal from "./ConvertPointsModal";
 
-function WalletCard({ balance, lastFunded, loading, formatDate }) {
+function WalletCard({
+  balance,
+  lastFunded,
+  points,
+  loading,
+  formatDate,
+  onPointsConverted,
+}) {
+  const [showConvertModal, setShowConvertModal] = useState(false);
+
+  const handleConvertSuccess = (data) => {
+    if (onPointsConverted) {
+      onPointsConverted(data);
+    }
+  };
+
   return (
-    <div className="bg-primary rounded-2xl p-6 relative group">
-      <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 text-xs text-white/90">
-          <InformationCircleIcon className="w-4 h-4 inline-block mr-1" />
-          Active
+    <>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Balance Section */}
+          <div className="flex items-start space-x-4">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <WalletIcon className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Available Balance</p>
+              {loading ? (
+                <div className="h-8 bg-gray-200 animate-pulse rounded w-32 mt-1"></div>
+              ) : (
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {balance.full || "0.00"}
+                </h3>
+              )}
+              {lastFunded && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Last funded: {formatDate(lastFunded)}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Points Section with Icon Button */}
+          <div className="flex items-start space-x-4">
+            <div className="p-3 bg-yellow-50 rounded-lg">
+              <GiftIcon className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Reward Points</p>
+                  {loading ? (
+                    <div className="h-8 bg-gray-200 animate-pulse rounded w-32 mt-1"></div>
+                  ) : (
+                    <h3 className="text-2xl font-bold text-yellow-600">
+                      {points?.toLocaleString() || "0"} pts
+                    </h3>
+                  )}
+                </div>
+                {points > 0 && (
+                  <button
+                    onClick={() => setShowConvertModal(true)}
+                    className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                    title="Convert Points to Cash"
+                  >
+                    <ArrowPathRoundedSquareIcon className="w-6 h-6" />
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Earn points with every transaction
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <WalletIcon className="w-8 h-8 text-white/80" />
-          <h2 className="text-xl text-white font-semibold">Wallet Balance</h2>
-        </div>
-      </div>
-
-      <p className="text-4xl font-bold text-white mb-4">
-        {loading ? (
-          <span className="text-2xl animate-fade-in">Loading...</span>
-        ) : (
-          `₦${balance.toFixed(2).toLocaleString()}`
-        )}
-      </p>
-
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-white/80">
-          {lastFunded
-            ? `Last funded: ${formatDate(lastFunded)}`
-            : "No recent funding"}
-        </span>
-      </div>
-    </div>
+      <ConvertPointsModal
+        isOpen={showConvertModal}
+        onClose={() => setShowConvertModal(false)}
+        points={points}
+        onSuccess={handleConvertSuccess}
+      />
+    </>
   );
 }
 

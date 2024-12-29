@@ -185,7 +185,7 @@ function DashboardLayout() {
                 {walletData.loading ? (
                   <span className="text-lg animate-fade-in-up">Loading...</span>
                 ) : (
-                  `₦${walletData.balance.toFixed(2).toLocaleString()}`
+                  `${walletData.balance.full}`
                 )}
               </p>
               <Link

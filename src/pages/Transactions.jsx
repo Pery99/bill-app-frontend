@@ -70,7 +70,7 @@ function Transactions() {
       }-600 font-medium`}
     >
       {transaction.transaction_type === "credit" ? "+" : "-"}₦
-      {transaction.amount.toLocaleString()}
+      {transaction.amount.toFixed(2).toLocaleString()}
     </div>
   );
 
@@ -84,14 +84,10 @@ function Transactions() {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching transactions for page:", page);
-
       const data = await transactionService.getTransactions({
         page,
         limit: 10,
       });
-
-      console.log("Raw transaction data:", data);
 
       if (
         !data ||
@@ -107,10 +103,6 @@ function Transactions() {
         ...data.pagination,
         currentPage: page,
       }));
-
-      // Log the state updates
-      console.log("Updated transactions:", data.transactions);
-      console.log("Updated pagination:", data.pagination);
     } catch (error) {
       console.error("Transaction fetch error:", error);
       setError(error.message);
