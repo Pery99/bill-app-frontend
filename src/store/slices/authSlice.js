@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { authService } from "../../services/authService";
 import { authUtils } from "../../utils/auth";
 import { TOKEN_KEY } from "../../utils/constants";
+import api from "../../utils/api";
 
 const initialState = {
   user: null,
