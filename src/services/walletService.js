@@ -20,4 +20,14 @@ export const walletService = {
       throw error;
     }
   },
+
+  getTransactions: async () => {
+    try {
+      const response = await api.get("/transactions/history");
+      return response.data.transactions || [];
+    } catch (error) {
+      console.error("Failed to fetch transactions:", error);
+      return [];
+    }
+  },
 };

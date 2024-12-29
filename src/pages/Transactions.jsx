@@ -1,51 +1,21 @@
 import { useState, useEffect } from "react";
-import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { transactionService } from "../services/transactionService";
 import { notify } from "../utils/toast";
+import Pagination from "../components/Pagination";
 
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
-
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
-
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      const data = await transactionService.getTransactions();
-
-      if (!data) {
-        console.warn("No transaction data received");
-        setTransactions([]);
-        notify.error("No transactions found");
-        return;
-      }
-
-      if (!Array.isArray(data)) {
-        console.error("Invalid data format:", data);
-        setTransactions([]);
-        notify.error("Invalid transaction data format");
-        return;
-      }
-
-      setTransactions(data);
-    } catch (error) {
-      console.error("Transaction fetch error:", error);
-      notify.error(
-        error.response?.data?.message || "Failed to fetch transactions"
-      );
-      setTransactions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredTransactions = transactions.filter((tx) =>
-    filter === "all" ? true : tx.transaction_type === filter
-  );
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 0,
+    totalTransactions: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    limit: 10,
+  });
 
   const getTransactionIcon = (type) => {
     switch (type) {
@@ -93,39 +63,89 @@ function Transactions() {
     }
   };
 
-  const getAmountDisplay = (transaction) => {
-    if (transaction.status === "failed") {
-      return (
-        <div className="text-right">
-          <p className="font-semibold text-yellow-600">Failed</p>
-          <p className="text-xs text-gray-500">
-            ₦{transaction.amount.toLocaleString()}
-          </p>
-        </div>
-      );
-    }
+  const getAmountDisplay = (transaction) => (
+    <div
+      className={`text-${
+        transaction.transaction_type === "credit" ? "green" : "red"
+      }-600 font-medium`}
+    >
+      {transaction.transaction_type === "credit" ? "+" : "-"}₦
+      {transaction.amount.toLocaleString()}
+    </div>
+  );
 
-    return (
-      <div className="text-right">
-        <p
-          className={`font-semibold ${
-            transaction.transaction_type === "credit"
-              ? "text-green-600"
-              : "text-red-600"
-          }`}
-        >
-          {transaction.transaction_type === "credit" ? "+" : "-"}₦
-          {transaction.amount.toLocaleString()}
-        </p>
-        <p className="text-xs text-gray-500">Ref: {transaction.reference}</p>
-      </div>
-    );
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (filter === "all") return true;
+    return transaction.transaction_type === filter;
+  });
+
+  const fetchTransactions = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("Fetching transactions for page:", page);
+
+      const data = await transactionService.getTransactions({
+        page,
+        limit: 10,
+      });
+
+      console.log("Raw transaction data:", data);
+
+      if (
+        !data ||
+        (!Array.isArray(data.transactions) && !Array.isArray(data))
+      ) {
+        console.error("Invalid data structure:", data);
+        throw new Error("Invalid data received from server");
+      }
+
+      setTransactions(data.transactions || []);
+      setPagination((prev) => ({
+        ...prev,
+        ...data.pagination,
+        currentPage: page,
+      }));
+
+      // Log the state updates
+      console.log("Updated transactions:", data.transactions);
+      console.log("Updated pagination:", data.pagination);
+    } catch (error) {
+      console.error("Transaction fetch error:", error);
+      setError(error.message);
+      notify.error(error.message || "Failed to fetch transactions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const handlePageChange = (newPage) => {
+    fetchTransactions(newPage);
   };
 
   if (loading) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">Error: {error}</p>
+        <button
+          onClick={() => fetchTransactions()}
+          className="mt-4 btn-secondary"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -200,6 +220,16 @@ function Transactions() {
           ))
         )}
       </div>
+
+      {filteredTransactions.length > 0 && (
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={handlePageChange}
+          hasNextPage={pagination.hasNextPage}
+          hasPrevPage={pagination.hasPrevPage}
+        />
+      )}
     </div>
   );
 }
