@@ -216,7 +216,7 @@ function Dashboard() {
                   }`}
                 >
                   {transaction.transaction_type === "credit" ? "+" : "-"}₦
-                  {transaction?.amount?.toFixed(2).toLocaleString()}
+                  {transaction?.amount?.toLocaleString()}
                 </span>
               </div>
             ))}

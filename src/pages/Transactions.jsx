@@ -70,7 +70,7 @@ function Transactions() {
       }-600 font-medium`}
     >
       {transaction.transaction_type === "credit" ? "+" : "-"}₦
-      {transaction.amount.toFixed(2).toLocaleString()}
+      {transaction.amount.toLocaleString()}
     </div>
   );
 
