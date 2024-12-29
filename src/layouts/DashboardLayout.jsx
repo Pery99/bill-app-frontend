@@ -11,6 +11,7 @@ import {
   UserCircleIcon,
   ClockIcon,
   ChatBubbleLeftRightIcon, // Add this import
+  QuestionMarkCircleIcon, // Add this import
 } from "@heroicons/react/24/outline";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, fetchUserData } from "../store/slices/authSlice"; // Add fetchUserData import
@@ -49,6 +50,11 @@ function DashboardLayout() {
       disabled: true,
     },
     { name: "Transactions", href: "/dashboard/transactions", icon: ClockIcon },
+    {
+      name: "Support",
+      href: "/dashboard/support",
+      icon: QuestionMarkCircleIcon,
+    },
   ];
 
   // Update selector to include userFetched flag
@@ -274,7 +280,7 @@ function DashboardLayout() {
         </main>
       </div>
 
-      {/* Updated floating customer care icon */}
+      {/* Updated floating customer care icon
       <div className="fixed bottom-8 right-8 z-50">
         <a
           href="https://wa.me/2347044299948"
@@ -285,7 +291,7 @@ function DashboardLayout() {
           <ChatBubbleLeftRightIcon className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
           <span className="sr-only">Chat with us on WhatsApp</span>
         </a>
-      </div>
+      </div> */}
     </div>
   );
 }

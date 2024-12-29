@@ -48,8 +48,6 @@ export const authService = {
     }
   },
 
-  // ...existing auth methods...
-
   forgotPassword: async (email) => {
     try {
       const response = await api.post("/auth/forgot-password", { email });

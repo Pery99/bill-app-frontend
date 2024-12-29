@@ -22,6 +22,7 @@ import Electricity from "../pages/Electricity";
 import Transactions from "../pages/Transactions";
 import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
+import Support from "../pages/Support";
 
 const AppRoutes = () => {
   return (
@@ -48,6 +49,7 @@ const AppRoutes = () => {
           <Route path="/dashboard/electricity" element={<Electricity />} />
           <Route path="/dashboard/transactions" element={<Transactions />} />
           <Route path="/dashboard/profile" element={<Profile />} />
+          <Route path="/dashboard/support" element={<Support />} />
         </Route>
       </Route>
 
