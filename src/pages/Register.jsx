@@ -105,132 +105,123 @@ function Register() {
   };
 
   return (
-    <div className="card">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <h2 className="text-heading-2 text-primary text-center mb-8">
-          Create Account
-        </h2>
+    <div className="w-full max-w-md">
+      <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+      <p className="text-gray-600 mb-8">Get started with QuickBills today</p>
 
-        {/* Replace first name and last name with full name */}
-        <div className="space-y-2">
-          <label className="text-body-small font-medium text-gray-700">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Full Name Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Full Name
           </label>
           <input
-            className={`input-field ${errors.fullname ? "border-red-500" : ""}`}
             type="text"
             name="fullname"
             value={formData.fullname}
             onChange={handleInputChange}
-            placeholder="Enter your full name"
+            className={`w-full px-4 py-3 rounded-lg border ${
+              errors.fullname ? 'border-red-500' : 'border-gray-200'
+            } focus:outline-none focus:ring-2 focus:ring-primary/20`}
+            placeholder="John Doe"
+            disabled={loading}
           />
           {errors.fullname && (
-            <p className="text-red-500 text-xs mt-1">{errors.fullname}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.fullname}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-body-small font-medium text-gray-700">
-            Email
+        {/* Email Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address
           </label>
           <input
             type="email"
-            className={`input-field ${errors.email ? "border-red-500" : ""}`}
-            placeholder="Enter your email"
             name="email"
             value={formData.email}
             onChange={handleInputChange}
+            className={`w-full px-4 py-3 rounded-lg border ${
+              errors.email ? 'border-red-500' : 'border-gray-200'
+            } focus:outline-none focus:ring-2 focus:ring-primary/20`}
+            placeholder="you@example.com"
             disabled={loading}
-            required
           />
           {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-body-small font-medium text-gray-700">
-            Password
-          </label>
-          <input
-            type="password"
-            className={`input-field ${errors.password ? "border-red-500" : ""}`}
-            placeholder="Create a password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            disabled={loading}
-            required
-          />
-          <p className="text-xs text-gray-500">Must be at least 6 characters</p>
-          {errors.password && (
-            <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-body-small font-medium text-gray-700">
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            className={`input-field ${
-              errors.confirmPassword ? "border-red-500" : ""
-            }`}
-            placeholder="Confirm your password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleInputChange}
-            disabled={loading}
-            required
-          />
-          {errors.confirmPassword && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.confirmPassword}
+        {/* Password Fields */}
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 rounded-lg border ${
+                errors.password ? 'border-red-500' : 'border-gray-200'
+              } focus:outline-none focus:ring-2 focus:ring-primary/20`}
+              placeholder="••••••••"
+              disabled={loading}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Must be at least 6 characters
             </p>
-          )}
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 rounded-lg border ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+              } focus:outline-none focus:ring-2 focus:ring-primary/20`}
+              placeholder="••••••••"
+              disabled={loading}
+            />
+            {errors.confirmPassword && (
+              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+            )}
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <span className="flex items-center justify-center">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+            <div className="flex items-center justify-center">
+              <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
               Creating account...
-            </span>
+            </div>
           ) : (
-            "Create Account"
+            'Create Account'
           )}
         </button>
 
-        <div className="text-center">
-          <Link to="/login" className="link-text">
-            Already have an account?{" "}
-            <span className="font-semibold text-primary">Sign in</span>
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link to="/login" className="text-primary hover:text-primary-600 font-medium">
+            Sign in
           </Link>
-        </div>
+        </p>
       </form>
     </div>
   );

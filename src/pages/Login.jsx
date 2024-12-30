@@ -1,38 +1,38 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser, selectors } from "../store/slices/authSlice";
 import { notify } from "../utils/toast";
-import { loginUser, selectors } from '../store/slices/authSlice';
 
 function Login() {
-  const [formData, setFormData] = useState({ 
-    email: "", 
+  const [formData, setFormData] = useState({
+    email: "",
     password: "",
-    remember: true // Add remember me state
+    remember: false,
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, token } = useSelector(selectors.selectAuth);
+  const { loading, token } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // Only redirect if token exists and we're not on the login page
-    if (token && location.pathname === '/login') {
-      navigate('/dashboard', { replace: true });
+    if (token && location.pathname === "/login") {
+      navigate("/dashboard", { replace: true });
     }
   }, [token, navigate]);
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
-    
+
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -47,13 +47,9 @@ function Login() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const result = await dispatch(loginUser({
-      email: formData.email,
-      password: formData.password,
-      remember: formData.remember // Pass remember preference
-    }));
+    const result = await dispatch(loginUser(formData));
 
-    if (result.meta.requestStatus === 'fulfilled') {
+    if (result.meta.requestStatus === "fulfilled") {
       notify.success("Welcome back!");
       handleSuccess();
     } else if (result.payload) {
@@ -62,47 +58,50 @@ function Login() {
   };
 
   return (
-    <div className="card">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <h2 className="text-heading-2 text-primary text-center mb-8">
-          Welcome Back
-        </h2>
+    <div className="w-full max-w-md">
+      <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
+      <p className="text-gray-600 mb-8">Sign in to your account to continue</p>
 
-        <div className="space-y-2">
-          <label className="text-body-small font-medium text-gray-700">
-            Email
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address
           </label>
           <input
-            className={`input-field ${errors.email ? 'border-red-500' : ''}`}
             type="email"
-            placeholder="Enter your email"
             value={formData.email}
             onChange={(e) => {
               setFormData({ ...formData, email: e.target.value });
-              if (errors.email) setErrors({ ...errors, email: '' });
+              if (errors.email) setErrors({ ...errors, email: "" });
             }}
+            className={`w-full px-4 py-3 rounded-lg border ${
+              errors.email ? "border-red-500" : "border-gray-200"
+            } focus:outline-none focus:ring-2 focus:ring-primary/20`}
+            placeholder="Enter your email"
           />
           {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-body-small font-medium text-gray-700">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Password
           </label>
           <input
-            className={`input-field ${errors.password ? 'border-red-500' : ''}`}
             type="password"
-            placeholder="Enter your password"
             value={formData.password}
             onChange={(e) => {
               setFormData({ ...formData, password: e.target.value });
-              if (errors.password) setErrors({ ...errors, password: '' });
+              if (errors.password) setErrors({ ...errors, password: "" });
             }}
+            className={`w-full px-4 py-3 rounded-lg border ${
+              errors.password ? "border-red-500" : "border-gray-200"
+            } focus:outline-none focus:ring-2 focus:ring-primary/20`}
+            placeholder="Enter your password"
           />
           {errors.password && (
-            <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
           )}
         </div>
 
@@ -110,16 +109,21 @@ function Login() {
           <label className="flex items-center">
             <input
               type="checkbox"
-              className="form-checkbox text-primary"
               checked={formData.remember}
-              onChange={(e) => setFormData({
-                ...formData,
-                remember: e.target.checked
-              })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  remember: e.target.checked,
+                })
+              }
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
             />
             <span className="ml-2 text-sm text-gray-600">Remember me</span>
           </label>
-          <Link to="/forgot-password" className="link-text">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-primary hover:text-primary-600"
+          >
             Forgot password?
           </Link>
         </div>
@@ -127,16 +131,11 @@ function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <span className="flex items-center justify-center">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
+            <div className="flex items-center justify-center">
+              <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -144,26 +143,30 @@ function Login() {
                   r="10"
                   stroke="currentColor"
                   strokeWidth="4"
-                ></circle>
+                  fill="none"
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                />
               </svg>
               Signing in...
-            </span>
+            </div>
           ) : (
             "Sign in"
           )}
         </button>
 
-        <div className="text-center">
-          <Link to="/register" className="link-text">
-            Don't have an account?{" "}
-            <span className="font-semibold text-primary">Sign up</span>
+        <p className="text-center text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-primary hover:text-primary-600 font-medium"
+          >
+            Create account
           </Link>
-        </div>
+        </p>
       </form>
     </div>
   );
