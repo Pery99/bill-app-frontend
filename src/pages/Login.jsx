@@ -8,7 +8,7 @@ function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    remember: false,
+    remember: true,
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
