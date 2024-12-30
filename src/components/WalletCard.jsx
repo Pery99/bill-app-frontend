@@ -38,7 +38,7 @@ function WalletCard({
                 <div className="h-8 bg-gray-200 animate-pulse rounded w-32 mt-1"></div>
               ) : (
                 <h3 className="text-2xl font-bold text-gray-900">
-                  {balance.full || "0.00"}
+                  {balance.full}
                 </h3>
               )}
               {lastFunded && (
