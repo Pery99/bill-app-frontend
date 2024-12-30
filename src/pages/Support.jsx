@@ -1,6 +1,9 @@
-import { ChatBubbleLeftRightIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleLeftRightIcon, EnvelopeIcon, PhoneIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { useState } from 'react';
 
 function Support() {
+  const [openFaq, setOpenFaq] = useState(null);
+
   const supportData = {
     email: "quickbillshelp@gmail.com",
     whatsapp: "+234 704 429 9948",
@@ -9,8 +12,36 @@ function Support() {
     workdays: "Monday - Sunday",
   };
 
+  const faqs = [
+    {
+      question: "How do I fund my wallet?",
+      answer: "You can fund your wallet using your debit card or bank transfer. Go to the Fund Wallet page and follow the simple steps to add money to your account."
+    },
+    {
+      question: "What are reward points?",
+      answer: "Reward points are earned with every transaction. These points can be converted to cash and added to your wallet balance."
+    },
+    {
+      question: "How long does it take to process transactions?",
+      answer: "Most transactions are processed instantly. In rare cases, it might take up to 5 minutes. If you experience any delays, please contact our support team."
+    },
+    {
+      question: "Is my money safe?",
+      answer: "Yes, your money is completely safe. I go lie for you???"
+    },
+    {
+      question: "How do I get a refund?",
+      answer: "For refund requests, please contact our support team via WhatsApp or email with your transaction details. Refunds are processed within 24-48 hours."
+    }
+  ];
+
+  const toggleFaq = (index) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-8">
+      {/* Existing contact section */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Need Help?</h1>
         <p className="text-gray-600 mt-2">We're here to assist you</p>
@@ -66,13 +97,40 @@ function Support() {
             </a>
           </div>
         </div>
+      </div>
 
-        {/* Support Hours */}
-        <div className="border-t pt-6 mt-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">Support Hours</h3>
-          <p className="text-gray-600">{supportData.hours}</p>
-          <p className="text-gray-600">{supportData.workdays}</p>
+      {/* FAQ Section */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div key={index} className="border-b border-gray-100 last:border-0">
+              <button
+                onClick={() => toggleFaq(index)}
+                className="flex items-center justify-between w-full py-4 text-left"
+              >
+                <span className="font-medium text-gray-900">{faq.question}</span>
+                <ChevronDownIcon 
+                  className={`w-5 h-5 text-gray-500 transition-transform ${
+                    openFaq === index ? 'transform rotate-180' : ''
+                  }`}
+                />
+              </button>
+              {openFaq === index && (
+                <div className="pb-4">
+                  <p className="text-gray-600">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* Support Hours - moved to bottom */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-medium text-gray-900 mb-2">Support Hours</h3>
+        <p className="text-gray-600">{supportData.hours}</p>
+        <p className="text-gray-600">{supportData.workdays}</p>
       </div>
     </div>
   );
