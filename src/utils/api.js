@@ -5,14 +5,13 @@ import { resetAuth } from "../store/slices/authSlice";
 
 const api = axios.create({
   // baseURL: "http://localhost:3000/api",
-  baseURL: "https://bill-app-api.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
-
-api.interceptors.request.use(
+https: api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
