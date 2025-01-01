@@ -1,10 +1,15 @@
-import { TOKEN_KEY, TOKEN_EXPIRY_KEY, REFRESH_TOKEN_KEY, TOKEN_DURATION } from './constants';
+import {
+  TOKEN_KEY,
+  TOKEN_EXPIRY_KEY,
+  REFRESH_TOKEN_KEY,
+  TOKEN_DURATION,
+} from "./constants";
 
 export const authUtils = {
   setToken: (token, remember = true) => {
     const expiry = new Date();
     expiry.setHours(expiry.getHours() + (remember ? TOKEN_DURATION : 1));
-    
+
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(TOKEN_EXPIRY_KEY, expiry.toISOString());
   },

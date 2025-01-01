@@ -6,7 +6,7 @@ import api from "../../utils/api";
 
 const initialState = {
   user: null,
-  token: localStorage.getItem(TOKEN_KEY), // Direct access initially
+  token: authUtils.getToken(),
   loading: false,
   error: null,
   userFetched: false,
