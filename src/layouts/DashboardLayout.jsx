@@ -10,11 +10,11 @@ import {
   XMarkIcon,
   UserCircleIcon,
   ClockIcon,
-  ChatBubbleLeftRightIcon, // Add this import
-  QuestionMarkCircleIcon, // Add this import
+  ChatBubbleLeftRightIcon, 
+  QuestionMarkCircleIcon, 
 } from "@heroicons/react/24/outline";
 import { useDispatch, useSelector } from "react-redux";
-import { logout, fetchUserData } from "../store/slices/authSlice"; // Add fetchUserData import
+import { logout, fetchUserData } from "../store/slices/authSlice";
 import toast from "react-hot-toast";
 import { notify } from "../utils/toast";
 import { walletService } from "../services/walletService";
@@ -41,13 +41,13 @@ function DashboardLayout() {
       name: "TV Subscription",
       href: "/dashboard/tv",
       icon: TvIcon,
-      disabled: true,
+      //disabled: true,
     },
     {
       name: "Buy Electricity",
       href: "/dashboard/electricity",
       icon: LightBulbIcon,
-      disabled: true,
+      //disabled: true,
     },
     { name: "Transactions", href: "/dashboard/transactions", icon: ClockIcon },
     {
@@ -134,7 +134,7 @@ function DashboardLayout() {
   const handleLogout = async () => {
     try {
       await dispatch(logout());
-      authUtils.clearAuthData(); // Add this line
+      authUtils.clearAuthData();
       navigate("/login", { replace: true });
     } catch (error) {
       // notify.error("Failed to logout");
@@ -279,19 +279,6 @@ function DashboardLayout() {
           <Outlet />
         </main>
       </div>
-
-      {/* Updated floating customer care icon
-      <div className="fixed bottom-8 right-8 z-50">
-        <a
-          href="https://wa.me/2347044299948"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center justify-center w-14 h-14 bg-primary rounded-full shadow-lg transition-all duration-300 hover:scale-105"
-        >
-          <ChatBubbleLeftRightIcon className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
-          <span className="sr-only">Chat with us on WhatsApp</span>
-        </a>
-      </div> */}
     </div>
   );
 }
