@@ -1,138 +1,240 @@
-import { useState, useEffect, useMemo } from "react";
-import { notify } from "../utils/toast";
+import { useState, useRef, useEffect } from "react";
 import api from "../utils/api";
+import { notify } from "../utils/toast";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
 function Data() {
-  const [loading, setLoading] = useState(false);
-  const [dataPlans, setDataPlans] = useState([]);
-  const [selectedPlanType, setSelectedPlanType] = useState("");
-  const [formData, setFormData] = useState({
-    mobile_number: "",
-    network: "",
-    plan: "",
-    amount: 0,
-  });
-
+  // Add networks constant at the top
   const networks = [
-    { id: "1", name: "MTN" },
-    { id: "4", name: "Airtel" },
-    { id: "2", name: "Glo" },
-    { id: "3", name: "9mobile" },
+    { id: "1", name: "MTN", logo: "/mtnlogo.svg" },
+    { id: "4", name: "Airtel", logo: "/airtel.jfif" },
+    { id: "2", name: "Glo", logo: "/glo-logo.png" },
+    { id: "3", name: "9Mobile", logo: "/9mobile-logo.jpg" },
   ];
 
-  // Get data plans for selected network
-  const getNetworkPlans = useMemo(() => {
-    if (!dataPlans?.[0]) return {};
+  const [loading, setLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("SME");
+  const [dataPlans, setDataPlans] = useState(null);
+  const dropdownRef = useRef(null);
+  const [formData, setFormData] = useState({
+    network: "1",
+    phoneNumber: "",
+    planId: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoadingPlans, setIsLoadingPlans] = useState(true);
 
-    const networkMap = {
-      1: "MTN_PLAN",
-      2: "GLO_PLAN",
-      3: "9MOBILE_PLAN",
-      4: "AIRTEL_PLAN",
-    };
+  // Update the network change handler in the dropdown
+  const handleNetworkChange = (networkId) => {
+    handleInputChange({
+      target: { name: "network", value: networkId },
+    });
+    setIsDropdownOpen(false);
+    setFormData((prev) => ({ ...prev, planId: "" }));
 
-    const networkKey = networkMap[formData.network];
-    if (!networkKey || !dataPlans[0][networkKey]) return {};
+    // Switch to 'ALL' tab for non-MTN networks
+    if (networkId !== "1") {
+      setActiveTab("ALL");
+    }
+  };
 
-    const selectedNetworkPlans = dataPlans[0][networkKey];
+  // Update getPlanTypes to handle non-MTN networks
+  const getPlanTypes = () => {
+    if (!dataPlans?.[0]) return [];
+    const currentNetwork = formData.network;
+    let planData;
 
-    // For MTN, return all plan types
-    if (formData.network === "1") {
-      return {
-        CORPORATE: selectedNetworkPlans.CORPORATE || [],
-        SME: selectedNetworkPlans.SME || [],
-        GIFTING: selectedNetworkPlans.GIFTING || [],
-        ALL: selectedNetworkPlans.ALL || [],
-      };
+    switch (currentNetwork) {
+      case "1":
+        planData = dataPlans[0].MTN_PLAN;
+        // Filter out SME2 from plan types
+        return Object.keys(planData).filter(
+          (type) =>
+            type !== "SME2" &&
+            Array.isArray(planData[type]) &&
+            planData[type].length > 0
+        );
+      default:
+        // For other networks, only show 'ALL' tab
+        return ["ALL"];
+    }
+  };
+
+  // Get current plans based on active tab
+  const getCurrentPlans = () => {
+    if (!dataPlans?.[0]) return [];
+
+    const currentNetwork = formData.network;
+    let planData;
+
+    switch (currentNetwork) {
+      case "1":
+        planData = dataPlans[0].MTN_PLAN;
+        break;
+      case "2":
+        planData = dataPlans[0].GLO_PLAN;
+        break;
+      case "3":
+        planData = dataPlans[0]["9MOBILE_PLAN"];
+        break;
+      case "4":
+        planData = dataPlans[0].AIRTEL_PLAN;
+        break;
+      default:
+        planData = dataPlans[0].MTN_PLAN;
     }
 
-    // For other networks, just return ALL plans
-    return {
-      ALL: selectedNetworkPlans.ALL || [],
-    };
-  }, [dataPlans, formData.network]);
+    const plans = planData?.[activeTab] || [];
+    // Filter out SME2 plans for MTN ALL tab
+    return currentNetwork === "1" && activeTab === "ALL"
+      ? plans.filter((plan) => plan.plan_type !== "SME2")
+      : plans;
+  };
 
-  // Get available plan types for selected network
-  const availablePlanTypes = useMemo(() => {
-    const types = Object.keys(getNetworkPlans).filter(
-      (type) =>
-        Array.isArray(getNetworkPlans[type]) && getNetworkPlans[type].length > 0
-    );
-    return types;
-  }, [getNetworkPlans]);
+  // Format validity period
+  const formatValidity = (validity) => {
+    return validity
+      .toLowerCase()
+      .replace("-days", " Days")
+      .replace("(cg)", "")
+      .trim();
+  };
 
+  // Update formatPlanType function to better handle CORPORATE GIFTING
+  const formatPlanType = (type) => {
+    if (type === "CORPORATE GIFTING") return "Corporate";
+    return type
+      .split("_")
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  // Load data plans when component mounts or network changes
   useEffect(() => {
-    fetchDataPlans();
+    const fetchDataPlans = async () => {
+      setIsLoadingPlans(true);
+      try {
+        const response = await api.get("/transactions/data-plans");
+        console.log("Data plans response:", response.data); // Debug log
+        if (response.data && Array.isArray(response.data) && response.data[0]) {
+          setDataPlans(response.data);
+          // Set initial active tab only if not already set
+          if (!activeTab && response.data[0]) {
+            const firstAvailableType = ["SME", "CORPORATE", "ALL"].find(
+              (type) => response.data[0][type]?.length > 0
+            );
+            setActiveTab(firstAvailableType || "SME");
+          }
+        } else {
+          throw new Error("Invalid data format received");
+        }
+      } catch (error) {
+        console.error("Data plans fetch error:", error);
+        notify.error("Failed to load data plans");
+      } finally {
+        setIsLoadingPlans(false);
+      }
+    };
+
+    if (formData.network) {
+      fetchDataPlans();
+    }
+  }, [formData.network]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchDataPlans = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get("/transactions/data-plans");
+  // Update validateForm function
+  const validateForm = () => {
+    const newErrors = {};
 
-      if (!Array.isArray(response.data)) {
-        setDataPlans([response.data]); // Wrap object in array if not already an array
-      } else {
-        setDataPlans(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch data plans:", error);
-      notify.error(error.response?.data?.error || "Failed to fetch data plans");
-      setDataPlans([]);
-    } finally {
-      setLoading(false);
+    if (!formData.network) {
+      newErrors.network = "Please select a network";
     }
+
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = "Phone number is required";
+    } else if (!/^[0-9]{11}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Enter a valid 11-digit phone number";
+    }
+
+    if (!formData.planId) {
+      newErrors.planId = "Please select a data plan";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleNetworkChange = (e) => {
-    const network = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      network,
-      plan: "", // Reset plan when network changes
-    }));
-    setSelectedPlanType(""); // Reset plan type
-  };
-
+  // Update handleSubmit function to include plan amount
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    console.log("Form data:", formData);
-
     if (!validateForm()) return;
+
+    const selectedPlan = getCurrentPlans().find(
+      (p) => p.dataplan_id === formData.planId
+    );
+    if (!selectedPlan) {
+      notify.error("Please select a valid data plan");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await api.post("/transactions/data", formData);
-      console.log(response);
+      const response = await api.post("/transactions/data", {
+        mobile_number: formData.phoneNumber,
+        network: formData.network,
+        plan: selectedPlan.dataplan_id,
+        // plan_type: selectedPlan.plan_type,
+        amount: Number(selectedPlan.plan_amount), // Add plan amount to request
+      });
+
       if (response.data.Status === "successful") {
-        notify.success("Data purchase successful");
-        setFormData({ network: "", mobile_number: "", plan: "", amount: 0 });
-        setSelectedPlanType("");
+        notify.success("Data bundle purchased successfully");
+        setFormData({ network: "1", phoneNumber: "", planId: "" });
       }
     } catch (error) {
-      notify.error(error.response?.data?.error || "Failed to purchase data");
+      console.log(error);
+
+      notify.error(
+        error.response?.data?.error || "Failed to purchase data bundle"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const validateForm = () => {
-    if (!formData.network) {
-      notify.error("Please select a network");
-      return false;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-    if (
-      !formData.mobile_number ||
-      !/^[0-9]{11}$/.test(formData.mobile_number)
-    ) {
-      setLoading(false);
-      notify.error('Invalid number')
-      return false;
+  };
+
+  const getSelectedPlanDetails = () => {
+    for (const category of Object.values(networkDataPlans[formData.network])) {
+      const plan = category.find((p) => p.id === formData.planId);
+      if (plan) return plan;
     }
-    if (!formData.plan) {
-      notify.error("Please select a data plan");
-      return false;
-    }
-    return true;
+    return null;
+  };
+
+  // Get current network's data plans
+  const getCurrentNetworkPlans = () => {
+    if (!dataPlans) return [];
+    return activeTab === "CORPORATE"
+      ? dataPlans.CORPORATE
+      : dataPlans[activeTab] || [];
   };
 
   return (
@@ -140,125 +242,253 @@ function Data() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Buy Data Bundle</h1>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
-        {loading && (
-          <div className="absolute inset-0 bg-white/70 flex flex-col items-center justify-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary border-opacity-75"></div>
-            <span className="text-primary text-lg font-semibold">
-              Please wait...
-            </span>
+        <div className="mb-6 flex items-start space-x-3 p-4 bg-blue-50 rounded-lg">
+          <InformationCircleIcon className="w-5 h-5 text-blue-500 mt-0.5" />
+          <div className="text-sm text-blue-700">
+            <p className="font-medium mb-1">Data Bundle Purchase</p>
+            <p>
+              Select network, enter phone number, and choose your preferred data
+              plan
+            </p>
           </div>
-        )}
+        </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* Network Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Select Network
-            </label>
-            <select
-              className="input-field"
-              value={formData.network}
-              onChange={handleNetworkChange}
-              required
-              disabled={loading}
-            >
-              <option value="">Select a network</option>
-              {networks.map((network) => (
-                <option key={network.id} value={network.id}>
-                  {network.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Phone Number */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              className="input-field"
-              placeholder="Enter phone number"
-              value={formData.mobile_number}
-              onChange={(e) =>
-                setFormData({ ...formData, mobile_number: e.target.value })
-              }
-              required
-              disabled={loading}
-            />
-          </div>
-
-          {/* Plan Type Selection - Only show if network is selected */}
-          {formData.network && availablePlanTypes.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Select Plan Type
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Update Network and Phone Number Section to be inline */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Network Dropdown - adjust width */}
+            <div className="w-full md:w-1/3">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Select Network
               </label>
-              <select
-                className="input-field"
-                value={selectedPlanType}
-                onChange={(e) => setSelectedPlanType(e.target.value)}
-                required
-                disabled={loading}
-              >
-                <option value="">Select plan type</option>
-                {availablePlanTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type === "ALL"
-                      ? "Regular"
-                      : type.charAt(0) + type.slice(1).toUpperCase()}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`w-full flex items-center space-x-3 p-2.5 rounded-lg border ${
+                    errors.network ? "border-red-500" : "border-gray-300"
+                  } bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                >
+                  {formData.network ? (
+                    <>
+                      <img
+                        src={
+                          networks.find((n) => n.id === formData.network)?.logo
+                        }
+                        alt="Network Logo"
+                        className="w-8 h-8"
+                      />
+                      <span className="flex-grow text-left">
+                        {networks.find((n) => n.id === formData.network)?.name}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-gray-500">Select Network</span>
+                  )}
+                  <svg
+                    className={`w-5 h-5 transition-transform ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                    {networks.map((network) => (
+                      <button
+                        key={network.id}
+                        type="button"
+                        onClick={() => handleNetworkChange(network.id)}
+                        className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 ${
+                          formData.network === network.id ? "bg-blue-50" : ""
+                        }`}
+                      >
+                        <img
+                          src={network.logo}
+                          alt={network.name}
+                          className="w-8 h-8"
+                        />
+                        <span className="flex-grow text-left">
+                          {network.name}
+                        </span>
+                        {formData.network === network.id && (
+                          <svg
+                            className="w-5 h-5 text-blue-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {errors.network && (
+                <p className="text-red-500 text-xs mt-1">{errors.network}</p>
+              )}
             </div>
+
+            {/* Phone Number Input - adjust width */}
+            <div className="w-full md:w-2/3">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                className={`input-field ${
+                  errors.phoneNumber ? "border-red-500" : ""
+                }`}
+                placeholder="Enter phone number"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                required
+              />
+              {errors.phoneNumber && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.phoneNumber}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Plan Type Tabs */}
+          {isLoadingPlans ? (
+            <div className="py-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-gray-500">Loading data plans...</p>
+            </div>
+          ) : (
+            <>
+              {/* Plan Type Tabs */}
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-4 overflow-x-auto">
+                  {getPlanTypes().map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(type);
+                        setFormData((prev) => ({ ...prev, planId: "" }));
+                      }}
+                      className={`
+                        whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm
+                        ${
+                          activeTab === type
+                            ? "border-blue-500 text-blue-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }
+                      `}
+                    >
+                      {type === "ALL" ? "All Plans" : type}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Data Plans Grid - Updated to conditionally show labels */}
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr gap-3 mt-4">
+                {getCurrentPlans().length > 0 ? (
+                  getCurrentPlans().map((plan) => (
+                    <button
+                      key={plan.dataplan_id}
+                      type="button"
+                      onClick={() => handleInputChange({
+                        target: { name: "planId", value: plan.dataplan_id }
+                      })}
+                      className={`p-3 rounded-lg border-2 text-left transition-all h-full flex flex-col ${
+                        formData.planId === plan.dataplan_id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-blue-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="font-medium text-base">{plan.plan}</div>
+                        {activeTab === 'ALL' && (
+                          <span className="px-2 py-0.5 text-[10px] leading-4 font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                            {formatPlanType(plan.plan_type)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatValidity(plan.month_validate)}
+                      </div>
+                      <div className="text-base font-bold mt-auto pt-2">
+                        ₦{Number(plan.plan_amount).toLocaleString()}
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8 text-gray-500">
+                    No data plans available for this category
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
-          {/* Data Plan Selection - Only show if plan type is selected */}
-          {selectedPlanType &&
-            getNetworkPlans[selectedPlanType]?.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Select Data Plan
-                </label>
-                <select
-                  className="input-field"
-                  value={formData.plan}
-                  onChange={(e) => {
-                    const selectedOption = e.target.selectedOptions[0];
-                    const selectedPrice =
-                      selectedOption.getAttribute("data-price");
-                    setFormData({
-                      ...formData,
-                      plan: e.target.value,
-                      amount: selectedPrice,
-                    });
-                  }}
-                  required
-                  disabled={loading}
-                >
-                  <option value="">Select a plan</option>
-                  {getNetworkPlans[selectedPlanType].map((plan) => (
-                    <option
-                      key={plan.id}
-                      value={plan.id}
-                      data-price={Number(plan.plan_amount) + 65}
-                    >
-                      {plan.month_validate}-{plan.plan} - ₦
-                      {(Number(plan.plan_amount) + 65)?.toLocaleString() ||
-                        "N/A"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+          {errors.planId && (
+            <p className="text-red-500 text-xs mt-1">{errors.planId}</p>
+          )}
 
           <button
             type="submit"
-            disabled={loading || !formData.plan}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+            className="btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Please wait..." : "Buy Data Bundle"}
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              `Buy ${
+                getCurrentPlans().find((p) => p.dataplan_id === formData.planId)
+                  ?.plan || "Data Bundle"
+              } - 
+               ₦${
+                 getCurrentPlans()
+                   .find((p) => p.dataplan_id === formData.planId)
+                   ?.plan_amount?.toLocaleString() || "0"
+               }`
+            )}
           </button>
         </form>
       </div>

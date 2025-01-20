@@ -1,5 +1,4 @@
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "./store";
@@ -20,12 +19,10 @@ function App() {
           }
           persistor={persistor}
         >
-          <BrowserRouter>
-            <AuthInitializer>
-              <AppRoutes />
-              <Toaster position="top-right" />
-            </AuthInitializer>
-          </BrowserRouter>
+          <AuthInitializer>
+            <AppRoutes />
+            <Toaster position="top-right" />
+          </AuthInitializer>
         </PersistGate>
       </Provider>
     </ErrorBoundary>
