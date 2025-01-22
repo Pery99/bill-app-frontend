@@ -124,6 +124,11 @@ function DashboardLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Add this effect to close sidebar on route change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   // Close sidebar when clicking outside on mobile
   const handleOverlayClick = () => {
     if (isMobile) {

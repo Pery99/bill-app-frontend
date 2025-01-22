@@ -14,7 +14,7 @@ function Data() {
 
   const [loading, setLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("SME");
+  const [activeTab, setActiveTab] = useState("30"); // Changed from 'SME' to '30'
   const [dataPlans, setDataPlans] = useState(null);
   const dropdownRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -25,6 +25,65 @@ function Data() {
   const [errors, setErrors] = useState({});
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
 
+  // Update function to extract validity period from plan name and duration
+  const extractValidityPeriod = (plan) => {
+    const validity = plan.month_validate.toLowerCase();
+    
+    // Handle special cases for monthly plans
+    if (validity.includes('30') || validity.includes('month')) {
+      return '30';
+    }
+    
+    // Handle daily plans
+    if (validity.includes('24 hrs') || validity.includes('24hrs') || validity.includes('1 day')) {
+      return '1';
+    }
+
+    // Extract numeric value
+    const match = validity.match(/^(\d+)/);
+    if (!match) return '30'; // Default to 30 if no number found
+
+    const days = match[1];
+    // Normalize 48hrs to 2 days
+    if (validity.includes('hrs') || validity.includes('hours')) {
+      return Math.ceil(parseInt(days) / 24).toString();
+    }
+
+    return days;
+  };
+
+  // Update getValidityPeriods function to handle special cases
+  const getValidityPeriods = () => {
+    if (!dataPlans?.[0]) return [];
+    const currentNetwork = formData.network;
+    let planData;
+    
+    switch(currentNetwork) {
+      case "1":
+        planData = dataPlans[0].MTN_PLAN.ALL || [];
+        break;
+      case "2":
+        planData = dataPlans[0].GLO_PLAN.ALL || [];
+        break;
+      case "3":
+        planData = dataPlans[0]["9MOBILE_PLAN"].ALL || [];
+        break;
+      case "4":
+        planData = dataPlans[0].AIRTEL_PLAN.ALL || [];
+        break;
+      default:
+        planData = [];
+    }
+
+    // Get unique validity periods with proper parsing
+    const periods = [...new Set(planData.map(plan => extractValidityPeriod(plan)))];
+
+    // Sort periods numerically and filter out invalid ones
+    return periods
+      .filter(period => !isNaN(period))
+      .sort((a, b) => Number(a) - Number(b));
+  };
+
   // Update the network change handler in the dropdown
   const handleNetworkChange = (networkId) => {
     handleInputChange({
@@ -33,9 +92,12 @@ function Data() {
     setIsDropdownOpen(false);
     setFormData((prev) => ({ ...prev, planId: "" }));
 
-    // Switch to 'ALL' tab for non-MTN networks
-    if (networkId !== "1") {
-      setActiveTab("ALL");
+    // Try to keep monthly tab, fall back to first available
+    const periods = getValidityPeriods();
+    if (periods.includes("30")) {
+      setActiveTab("30");
+    } else {
+      setActiveTab(periods[0] || "30");
     }
   };
 
@@ -61,53 +123,84 @@ function Data() {
     }
   };
 
-  // Get current plans based on active tab
+  // Update getCurrentPlans to use new validity period extraction
   const getCurrentPlans = () => {
     if (!dataPlans?.[0]) return [];
-
+    
     const currentNetwork = formData.network;
     let planData;
-
-    switch (currentNetwork) {
+    
+    switch(currentNetwork) {
       case "1":
-        planData = dataPlans[0].MTN_PLAN;
+        planData = dataPlans[0].MTN_PLAN.ALL;
         break;
       case "2":
-        planData = dataPlans[0].GLO_PLAN;
+        planData = dataPlans[0].GLO_PLAN.ALL;
         break;
       case "3":
-        planData = dataPlans[0]["9MOBILE_PLAN"];
+        planData = dataPlans[0]["9MOBILE_PLAN"].ALL;
         break;
       case "4":
-        planData = dataPlans[0].AIRTEL_PLAN;
+        planData = dataPlans[0].AIRTEL_PLAN.ALL;
         break;
       default:
-        planData = dataPlans[0].MTN_PLAN;
+        planData = dataPlans[0].MTN_PLAN.ALL;
     }
 
-    const plans = planData?.[activeTab] || [];
-    // Filter out SME2 plans for MTN ALL tab
-    return currentNetwork === "1" && activeTab === "ALL"
-      ? plans.filter((plan) => plan.plan_type !== "SME2")
-      : plans;
+    // Filter plans by selected validity period
+    return planData?.filter(plan => {
+      const planValidity = extractValidityPeriod(plan);
+      return planValidity === activeTab;
+    }) || [];
   };
 
-  // Format validity period
+  // Update formatValidity function to better handle special cases
   const formatValidity = (validity) => {
-    return validity
-      .toLowerCase()
-      .replace("-days", " Days")
-      .replace("(cg)", "")
-      .trim();
+    if (!validity) return '';
+    
+    const lowerValidity = validity.toLowerCase();
+    
+    // Handle monthly cases
+    if (lowerValidity.includes('30') || lowerValidity.includes('month')) {
+      return 'Monthly';
+    }
+    
+    // Handle hour cases
+    if (lowerValidity.includes('hrs') || lowerValidity.includes('hours')) {
+      const hours = parseInt(lowerValidity);
+      if (isNaN(hours)) return validity;
+      if (hours === 24) return 'Daily';
+      return `${Math.ceil(hours / 24)} Days`;
+    }
+
+    // Extract the number of days
+    const daysMatch = lowerValidity.match(/^(\d+)/);
+    if (!daysMatch) return validity;
+
+    const days = parseInt(daysMatch[1]);
+    
+    // Handle special cases
+    if (days === 1) return 'Daily';
+    if (days === 7) return 'Weekly';
+    if (days === 14) return '2 Weeks';
+    if (days === 30) return 'Monthly';
+    if (days === 90) return '3 Months';
+    if (days === 120) return '4 Months';
+    if (days === 365) return 'Annual';
+
+    return `${days} Days`;
   };
 
-  // Update formatPlanType function to better handle CORPORATE GIFTING
+  // Update formatPlanType for better display
   const formatPlanType = (type) => {
-    if (type === "CORPORATE GIFTING") return "Corporate";
-    return type
-      .split("_")
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(" ");
+    const typeMap = {
+      'CORPORATE GIFTING': 'Corporate',
+      'DATA SHARE': 'Sharing',
+      'AWOOF DATA': 'Awoof',
+      'SME': 'SME',
+      'SME2': 'SME Plus'
+    };
+    return typeMap[type] || type;
   };
 
   // Load data plans when component mounts or network changes
@@ -116,15 +209,13 @@ function Data() {
       setIsLoadingPlans(true);
       try {
         const response = await api.get("/transactions/data-plans");
-        console.log("Data plans response:", response.data); // Debug log
         if (response.data && Array.isArray(response.data) && response.data[0]) {
           setDataPlans(response.data);
-          // Set initial active tab only if not already set
-          if (!activeTab && response.data[0]) {
-            const firstAvailableType = ["SME", "CORPORATE", "ALL"].find(
-              (type) => response.data[0][type]?.length > 0
-            );
-            setActiveTab(firstAvailableType || "SME");
+          // Set monthly tab as default
+          const periods = getValidityPeriods();
+          if (!periods.includes("30")) {
+            // If no monthly plans, set to first available period
+            setActiveTab(periods[0] || "30");
           }
         } else {
           throw new Error("Invalid data format received");
@@ -378,27 +469,31 @@ function Data() {
             </div>
           ) : (
             <>
-              {/* Plan Type Tabs */}
+              {/* Validity Period Tabs */}
               <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-4 overflow-x-auto">
-                  {getPlanTypes().map((type) => (
+                  {getValidityPeriods().map((period) => (
                     <button
-                      key={type}
+                      key={period}
                       type="button"
                       onClick={() => {
-                        setActiveTab(type);
-                        setFormData((prev) => ({ ...prev, planId: "" }));
+                        setActiveTab(period);
+                        setFormData(prev => ({ ...prev, planId: "" }));
                       }}
                       className={`
                         whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm
-                        ${
-                          activeTab === type
-                            ? "border-blue-500 text-blue-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }
+                        ${activeTab === period
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
                       `}
                     >
-                      {type === "ALL" ? "All Plans" : type}
+                      {period === "1" ? "Daily" : 
+                       period === "7" ? "Weekly" :
+                       period === "14" ? "2 Weeks" :
+                       period === "30" ? "Monthly" :
+                       period === "120" ? "4 Months" :
+                       period === "365" ? "Annual" :
+                       `${period} Days`}
                     </button>
                   ))}
                 </nav>
@@ -422,14 +517,12 @@ function Data() {
                     >
                       <div className="flex justify-between items-start mb-1">
                         <div className="font-medium text-base">{plan.plan}</div>
-                        {activeTab === 'ALL' && (
-                          <span className="px-2 py-0.5 text-[10px] leading-4 font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
-                            {formatPlanType(plan.plan_type)}
-                          </span>
-                        )}
+                        <span className="px-2 py-0.5 text-[10px] leading-4 font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                          {formatPlanType(plan.plan_type)}
+                        </span>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {formatValidity(plan.month_validate)}
+                      <div className="flex items-center space-x-2 text-xs text-gray-500">
+                        <span>{formatValidity(plan.month_validate)}</span>
                       </div>
                       <div className="text-base font-bold mt-auto pt-2">
                         ₦{Number(plan.plan_amount).toLocaleString()}
