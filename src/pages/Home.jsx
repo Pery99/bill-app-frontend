@@ -13,6 +13,7 @@ import {
   BoltIcon,
   SparklesIcon,
   StarIcon,
+  ArrowRightIcon
 } from "@heroicons/react/24/outline";
 
 function Home() {
@@ -103,6 +104,49 @@ function Home() {
       icon: CurrencyDollarIcon,
       color: "from-purple-500 to-purple-600",
     }
+  ];
+
+  const quickActions = [
+    {
+      title: 'Airtime',
+      icon: PhoneIcon,
+      description: 'Buy airtime for any network',
+      link: '/airtime',
+      color: 'bg-purple-50',
+      iconColor: 'text-purple-600',
+      borderColor: 'border-purple-200',
+      hoverBorder: 'hover:border-purple-300',
+    },
+    {
+      title: 'Data',
+      icon: WifiIcon,
+      description: 'Purchase data bundles',
+      link: '/data',
+      color: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      borderColor: 'border-blue-200',
+      hoverBorder: 'hover:border-blue-300',
+    },
+    {
+      title: 'TV',
+      icon: TvIcon,
+      description: 'Pay TV subscriptions',
+      link: '/tv',
+      color: 'bg-green-50',
+      iconColor: 'text-green-600',
+      borderColor: 'border-green-200',
+      hoverBorder: 'hover:border-green-300',
+    },
+    {
+      title: 'Electricity',
+      icon: BoltIcon,
+      description: 'Pay electricity bills',
+      link: '/electricity',
+      color: 'bg-orange-50',
+      iconColor: 'text-orange-600',
+      borderColor: 'border-orange-200',
+      hoverBorder: 'hover:border-orange-300',
+    },
   ];
 
   return (

@@ -8,6 +8,9 @@ import {
   ClockIcon,
   PhoneIcon,
   WifiIcon,
+  TvIcon,
+  BoltIcon,
+  ArrowRightIcon
 } from "@heroicons/react/24/outline";
 import { walletService } from "../services/walletService";
 import { notify } from "../utils/toast";
@@ -94,19 +97,43 @@ function Dashboard() {
   const quickLinks = [
     {
       id: 1,
-      name: "Buy Airtime",
+      name: "Airtime",
       href: "/dashboard/airtime",
       icon: PhoneIcon,
-      color: "bg-purple-100 text-purple-600",
-      description: "Purchase airtime for any network",
+      color: "bg-purple-50",
+      iconColor: "text-purple-600",
+      borderColor: "border-purple-200",
+      description: "Buy airtime for any network",
     },
     {
       id: 2,
-      name: "Buy Data",
+      name: "Data",
       href: "/dashboard/data",
       icon: WifiIcon,
-      color: "bg-blue-100 text-blue-600",
-      description: "Get internet data bundles",
+      color: "bg-blue-50",
+      iconColor: "text-blue-600",
+      borderColor: "border-blue-200",
+      description: "Purchase data bundles",
+    },
+    {
+      id: 3,
+      name: "TV",
+      href: "/dashboard/tv",
+      icon: TvIcon,
+      color: "bg-green-50",
+      iconColor: "text-green-600",
+      borderColor: "border-green-200",
+      description: "Pay TV subscriptions",
+    },
+    {
+      id: 4,
+      name: "Electricity",
+      href: "/dashboard/electricity",
+      icon: BoltIcon,
+      color: "bg-orange-50",
+      iconColor: "text-orange-600",
+      borderColor: "border-orange-200",
+      description: "Pay electricity bills",
     },
   ];
 
@@ -135,32 +162,32 @@ function Dashboard() {
         onPointsConverted={handlePointsConverted}
       />
 
-      {/* Quick Links Section */}
+      {/* Replace only the Quick Links Section */}
       <div className="py-2">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {quickLinks.map((link) => (
             <Link
               key={link.id}
               to={link.href}
-              className="group bg-white rounded-xl p-4 hover:shadow-md transition-all duration-200 border border-gray-100"
+              className={`group relative overflow-hidden rounded-xl border ${link.borderColor} transition-all duration-300 hover:shadow-lg`}
             >
-              <div className="flex items-start space-x-4">
-                <div className={`p-3 rounded-lg ${link.color}`}>
-                  <link.icon className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-primary">
+              <div className={`p-4 ${link.color}`}>
+                <div className="flex flex-col h-full">
+                  <div className={`${link.iconColor} mb-3`}>
+                    <link.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 mb-1">
                     {link.name}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mb-3">
                     {link.description}
                   </p>
-                  <div className="mt-2 flex items-center text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span>Buy Now</span>
-                    <ArrowUpIcon className="w-4 h-4 ml-1 rotate-45" />
+                  <div className={`mt-auto flex items-center text-sm font-medium ${link.iconColor} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                    <span>Get Started</span>
+                    <ArrowRightIcon className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>
               </div>
