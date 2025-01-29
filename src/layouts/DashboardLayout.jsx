@@ -10,8 +10,8 @@ import {
   XMarkIcon,
   UserCircleIcon,
   ClockIcon,
-  ChatBubbleLeftRightIcon, 
-  QuestionMarkCircleIcon, 
+  ChatBubbleLeftRightIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, fetchUserData } from "../store/slices/authSlice";
@@ -171,7 +171,7 @@ function DashboardLayout() {
         <div className="h-full flex flex-col">
           {/* Logo & Close Button */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-2xl font-bold text-primary">Quick Bills</h1>
+            <h1 className="text-2xl font-bold text-primary">Shaban express</h1>
             {isMobile && (
               <button
                 onClick={() => setSidebarOpen(false)}

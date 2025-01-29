@@ -151,9 +151,9 @@ function FundWallet() {
     }
   };
 
-  const calculateFee = (amount) => {
-    return (Number(amount) * 0.015).toFixed(2);
-  };
+  // const calculateFee = (amount) => {
+  //   return (Number(amount) * 0.015).toFixed(2);
+  // };
 
   return (
     <div className="max-w-md mx-auto">

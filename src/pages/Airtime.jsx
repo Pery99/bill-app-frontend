@@ -2,8 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import api from "../utils/api";
 import { notify } from "../utils/toast";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import PaymentMethodSelector from "../components/PaymentMethodSelector";
+import { initializePaystack } from "../utils/paystackConfig";
+import { useSelector } from "react-redux";
 
 function Airtime() {
+  const user = useSelector((state) => state.auth.user);
   const [loading, setLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -13,6 +17,7 @@ function Airtime() {
     amount: "",
   });
   const [errors, setErrors] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState("wallet");
 
   const networks = [
     { id: "1", name: "MTN", logo: "/mtnlogo.svg" },
@@ -49,21 +54,89 @@ function Airtime() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleDirectPayment = async (amount, phone, provider) => {
+    try {
+      const response = await api.post(
+        "/transactions/initialize-direct-payment",
+        {
+          amount: Number(amount),
+          type: "airtime",
+          email: user.email,
+          serviceDetails: {
+            phone,
+            provider: formData.network,
+            network: formData.network,
+            amount: Number(amount),
+          },
+        }
+      );
+
+      if (response.data.data) {
+        try {
+          const result = await initializePaystack({
+            email: user.email,
+            amount: amount,
+            reference: response.data.data.reference,
+          });
+
+          if (result.status === "success") {
+            // Verify payment and process transaction
+            const verifyResponse = await api.get(
+              `/transactions/verify-payment/${result.reference}?type=airtime`
+            );
+
+            console.log(verifyResponse.data);
+
+            if (verifyResponse.data.status === "success") {
+              notify.success("Airtime purchased successfully");
+              setFormData({ network: "1", phoneNumber: "", amount: "" });
+            } else {
+              notify.error("Transaction failed");
+            }
+          }
+        } catch (error) {
+          if (error.message === "Payment cancelled") {
+            notify.error("Payment cancelled");
+          } else {
+            throw error;
+          }
+        }
+      } else {
+        notify.error("Failed to initialize payment");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      notify.error(
+        error.response?.data?.message || "Failed to process payment"
+      );
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setLoading(true);
     try {
+      if (paymentMethod === "direct") {
+        await handleDirectPayment(
+          formData.amount,
+          formData.phoneNumber,
+          formData.network
+        );
+        return;
+      }
+
+      // Updated request body to use network ID
       const response = await api.post("/transactions/airtime", {
         phone: formData.phoneNumber,
-        provider: formData.network,
         amount: Number(formData.amount),
+        provider: formData.network, // Already an ID ("1", "2", etc)
+        network: formData.network, // Adding network ID
       });
-      // console.log('THIS IS ITTTTTT' ,response);
+
       if (response.data.Status === "successful") {
         notify.success("Airtime purchased successfully");
-        // Clear form
         setFormData({ network: "", phoneNumber: "", amount: "" });
       }
     } catch (error) {
@@ -76,20 +149,18 @@ function Airtime() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const handleQuickAmountSelect = (amount) => {
-    setFormData(prev => ({ ...prev, amount: amount.toString() }));
+    setFormData((prev) => ({ ...prev, amount: amount.toString() }));
     if (errors.amount) {
-      setErrors(prev => ({ ...prev, amount: "" }));
+      setErrors((prev) => ({ ...prev, amount: "" }));
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -114,9 +185,7 @@ function Airtime() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Update Network and Phone Number to be inline */}
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Network Dropdown - adjust width */}
             <div className="w-full md:w-1/3">
               <label className="text-sm font-medium text-gray-700 block mb-2">
                 Select Network
@@ -126,18 +195,20 @@ function Airtime() {
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className={`w-full flex items-center space-x-3 p-2.5 rounded-lg border ${
-                    errors.network ? 'border-red-500' : 'border-gray-300'
+                    errors.network ? "border-red-500" : "border-gray-300"
                   } bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 >
                   {formData.network ? (
                     <>
                       <img
-                        src={networks.find(n => n.id === formData.network)?.logo}
+                        src={
+                          networks.find((n) => n.id === formData.network)?.logo
+                        }
                         alt="Network Logo"
                         className="w-8 h-8"
                       />
                       <span className="flex-grow text-left">
-                        {networks.find(n => n.id === formData.network)?.name}
+                        {networks.find((n) => n.id === formData.network)?.name}
                       </span>
                     </>
                   ) : (
@@ -145,13 +216,18 @@ function Airtime() {
                   )}
                   <svg
                     className={`w-5 h-5 transition-transform ${
-                      isDropdownOpen ? 'rotate-180' : ''
+                      isDropdownOpen ? "rotate-180" : ""
                     }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -163,12 +239,12 @@ function Airtime() {
                         type="button"
                         onClick={() => {
                           handleInputChange({
-                            target: { name: "network", value: network.id }
+                            target: { name: "network", value: network.id },
                           });
                           setIsDropdownOpen(false);
                         }}
                         className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 ${
-                          formData.network === network.id ? 'bg-blue-50' : ''
+                          formData.network === network.id ? "bg-blue-50" : ""
                         }`}
                       >
                         <img
@@ -176,10 +252,22 @@ function Airtime() {
                           alt={network.name}
                           className="w-8 h-8"
                         />
-                        <span className="flex-grow text-left">{network.name}</span>
+                        <span className="flex-grow text-left">
+                          {network.name}
+                        </span>
                         {formData.network === network.id && (
-                          <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          <svg
+                            className="w-5 h-5 text-blue-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         )}
                       </button>
@@ -192,7 +280,6 @@ function Airtime() {
               )}
             </div>
 
-            {/* Phone Number Input - adjust width */}
             <div className="w-full md:w-2/3">
               <label className="text-sm font-medium text-gray-700 block mb-2">
                 Phone Number
@@ -209,12 +296,13 @@ function Airtime() {
                 required
               />
               {errors.phoneNumber && (
-                <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.phoneNumber}
+                </p>
               )}
             </div>
           </div>
 
-          {/* Quick Amounts */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
               Quick Amount
@@ -237,7 +325,6 @@ function Airtime() {
             </div>
           </div>
 
-          {/* Custom Amount Input - Always visible */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
               Custom Amount
@@ -258,6 +345,13 @@ function Airtime() {
             )}
           </div>
 
+          {formData.network && formData.amount && formData.phoneNumber && (
+            <PaymentMethodSelector
+              selectedMethod={paymentMethod}
+              onSelect={setPaymentMethod}
+            />
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -265,17 +359,30 @@ function Airtime() {
           >
             {loading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10"
-                          stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
                 </svg>
                 Processing...
               </span>
             ) : (
-              `Buy ₦${Number(formData.amount).toLocaleString() || '0'} Airtime`
+              `Pay ${paymentMethod === "wallet" ? "with Wallet" : "with Card"}`
             )}
           </button>
         </form>

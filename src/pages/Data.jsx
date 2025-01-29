@@ -2,8 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import api from "../utils/api";
 import { notify } from "../utils/toast";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import PaymentMethodSelector from "../components/PaymentMethodSelector";
+import { useSelector } from 'react-redux';
+import { initializePaystack } from "../utils/paystackConfig";
 
 function Data() {
+  // Add user selector
+  const user = useSelector((state) => state.auth.user);
   // Add networks constant at the top
   const networks = [
     { id: "1", name: "MTN", logo: "/mtnlogo.svg" },
@@ -24,6 +29,7 @@ function Data() {
   });
   const [errors, setErrors] = useState({});
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState("wallet");
 
   // Update function to extract validity period from plan name and duration
   const extractValidityPeriod = (plan) => {
@@ -266,7 +272,63 @@ function Data() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Update handleSubmit function to include plan amount
+  
+  // Add direct payment handler
+  const handleDirectPayment = async (selectedPlan) => {
+    
+    try {
+      const response = await api.post("/transactions/initialize-direct-payment", {
+        amount: Number(selectedPlan.plan_amount),
+        type: "data",
+        email: user.email,
+        serviceDetails: {
+          phone: formData.phoneNumber,
+          provider: formData.network,
+          network: formData.network,          
+          planId: selectedPlan.dataplan_id,   
+          plan: selectedPlan.dataplan_id,   
+          amount: selectedPlan.plan_amount
+        }
+      });
+
+      if (response.data.data) {
+        try {
+          const result = await initializePaystack({
+            email: user.email,
+            amount: selectedPlan.plan_amount,
+            reference: response.data.data.reference,
+          });
+          
+          if (result.status === 'success') {
+            // Verify payment and process transaction
+            const verifyResponse = await api.get(
+              `/transactions/verify-payment/${result.reference}?type=data`
+            );
+
+            if (verifyResponse.data.status === "success") {
+              notify.success("Data bundle purchased successfully");
+              setFormData({ network: "1", phoneNumber: "", planId: "" });
+            } else {
+              notify.error("Transaction failed");
+            }
+          }
+        } catch (error) {
+          if (error.message === 'Payment cancelled') {
+            notify.info("Payment cancelled");
+          } else {
+            throw error;
+          }
+        }
+      } else {
+        notify.error("Failed to initialize payment");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      notify.error(error.response?.data?.message || "Failed to process payment");
+    }
+  };
+
+  // Update handleSubmit function with correct field names
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -281,12 +343,17 @@ function Data() {
 
     setLoading(true);
     try {
+      if (paymentMethod === "direct") {
+        await handleDirectPayment(selectedPlan);
+        return;
+      }
+
+      // Updated request body to use IDs
       const response = await api.post("/transactions/data", {
-        mobile_number: formData.phoneNumber,
-        network: formData.network,
-        plan: selectedPlan.dataplan_id,
-        // plan_type: selectedPlan.plan_type,
-        amount: Number(selectedPlan.plan_amount), // Add plan amount to request
+        mobile_number: formData.phoneNumber,   
+        network: formData.network,             
+        plan: selectedPlan.dataplan_id,        
+        amount: Number(selectedPlan.plan_amount)
       });
 
       if (response.data.Status === "successful") {
@@ -294,8 +361,7 @@ function Data() {
         setFormData({ network: "1", phoneNumber: "", planId: "" });
       }
     } catch (error) {
-      console.log(error);
-
+      console.error("Error details:", error.response?.data);
       notify.error(
         error.response?.data?.error || "Failed to purchase data bundle"
       );
@@ -542,6 +608,14 @@ function Data() {
             <p className="text-red-500 text-xs mt-1">{errors.planId}</p>
           )}
 
+          {/* Add Payment Method Selector */}
+          {formData.network && formData.planId && formData.phoneNumber && (
+            <PaymentMethodSelector
+              selectedMethod={paymentMethod}
+              onSelect={setPaymentMethod}
+            />
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -572,15 +646,7 @@ function Data() {
                 Processing...
               </span>
             ) : (
-              `Buy ${
-                getCurrentPlans().find((p) => p.dataplan_id === formData.planId)
-                  ?.plan || "Data Bundle"
-              } - 
-               ₦${
-                 getCurrentPlans()
-                   .find((p) => p.dataplan_id === formData.planId)
-                   ?.plan_amount?.toLocaleString() || "0"
-               }`
+              `Pay ${paymentMethod === "wallet" ? "with Wallet" : "with Card"}`
             )}
           </button>
         </form>

@@ -106,8 +106,10 @@ function Register() {
 
   return (
     <div className="w-full max-w-md">
-      <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
-      <p className="text-gray-600 mb-8">Get started with QuickBills today</p>
+      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+        Create your account
+      </h2>
+      <p className="text-gray-600 mb-8">Get started with ShabanExpress today</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Full Name Field */}
@@ -121,7 +123,7 @@ function Register() {
             value={formData.fullname}
             onChange={handleInputChange}
             className={`w-full px-4 py-3 rounded-lg border ${
-              errors.fullname ? 'border-red-500' : 'border-gray-200'
+              errors.fullname ? "border-red-500" : "border-gray-200"
             } focus:outline-none focus:ring-2 focus:ring-primary/20`}
             placeholder="John Doe"
             disabled={loading}
@@ -142,7 +144,7 @@ function Register() {
             value={formData.email}
             onChange={handleInputChange}
             className={`w-full px-4 py-3 rounded-lg border ${
-              errors.email ? 'border-red-500' : 'border-gray-200'
+              errors.email ? "border-red-500" : "border-gray-200"
             } focus:outline-none focus:ring-2 focus:ring-primary/20`}
             placeholder="you@example.com"
             disabled={loading}
@@ -164,7 +166,7 @@ function Register() {
               value={formData.password}
               onChange={handleInputChange}
               className={`w-full px-4 py-3 rounded-lg border ${
-                errors.password ? 'border-red-500' : 'border-gray-200'
+                errors.password ? "border-red-500" : "border-gray-200"
               } focus:outline-none focus:ring-2 focus:ring-primary/20`}
               placeholder="••••••••"
               disabled={loading}
@@ -187,13 +189,15 @@ function Register() {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               className={`w-full px-4 py-3 rounded-lg border ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+                errors.confirmPassword ? "border-red-500" : "border-gray-200"
               } focus:outline-none focus:ring-2 focus:ring-primary/20`}
               placeholder="••••••••"
               disabled={loading}
             />
             {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.confirmPassword}
+              </p>
             )}
           </div>
         </div>
@@ -206,19 +210,34 @@ function Register() {
           {loading ? (
             <div className="flex items-center justify-center">
               <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               Creating account...
             </div>
           ) : (
-            'Create Account'
+            "Create Account"
           )}
         </button>
 
         <p className="text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="text-primary hover:text-primary-600 font-medium">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-primary hover:text-primary-600 font-medium"
+          >
             Sign in
           </Link>
         </p>

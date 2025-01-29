@@ -9,7 +9,7 @@ function AuthLayout() {
         <div className="relative z-10 max-w-xl mx-auto">
           <Link to="/" className="flex items-center space-x-2 mb-12">
             <WalletIcon className="w-8 h-8" />
-            <span className="text-2xl font-bold">QuickBills</span>
+            <span className="text-2xl font-bold">ShabanExpress</span>
           </Link>
 
           <h1 className="text-4xl font-bold mb-6">
@@ -67,7 +67,9 @@ function AuthLayout() {
         <div className="lg:hidden flex items-center justify-between p-4 border-b">
           <Link to="/" className="flex items-center space-x-2">
             <WalletIcon className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold text-gray-900">QuickBills</span>
+            <span className="text-xl font-bold text-gray-900">
+              ShabanExpress
+            </span>
           </Link>
         </div>
 
@@ -80,7 +82,8 @@ function AuthLayout() {
           {/* Footer Links */}
           <div className="mt-8 text-center text-sm text-gray-500">
             <p className="mt-4">
-              &copy; {new Date().getFullYear()} QuickBills. All rights reserved.
+              &copy; {new Date().getFullYear()} ShabanExpress. All rights
+              reserved.
             </p>
           </div>
         </div>

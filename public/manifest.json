@@ -1,6 +1,6 @@
 {
-  "name": "QuickBills",
-  "short_name": "QuickBills",
+  "name": "ShabanExpress",
+  "short_name": "ShabanExpress",
   "description": "Your One-Stop Solution for Bill Payments",
   "start_url": "/",
   "display": "standalone",

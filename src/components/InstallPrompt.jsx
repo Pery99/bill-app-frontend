@@ -18,28 +18,34 @@ function InstallPrompt() {
     const handleAppInstalled = () => {
       setShowPrompt(false);
       setInstallable(false);
-      localStorage.setItem('pwa-installed', 'true');
-      notify.success('App installed successfully!');
+      localStorage.setItem("pwa-installed", "true");
+      notify.success("App installed successfully!");
     };
 
     // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { 
-        scope: '/',
-        type: 'module'
-      }).then(registration => {
-        console.log('SW registered:', registration.scope);
-      }).catch(error => {
-        console.error('SW registration failed:', error);
-      });
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js", {
+          scope: "/",
+          type: "module",
+        })
+        .then((registration) => {
+          console.log("SW registered:", registration.scope);
+        })
+        .catch((error) => {
+          console.error("SW registration failed:", error);
+        });
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.addEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.addEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
@@ -51,14 +57,14 @@ function InstallPrompt() {
     try {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
+
+      if (outcome === "accepted") {
         setDeferredPrompt(null);
         setInstallable(false);
       }
     } catch (error) {
-      console.error('Installation failed:', error);
-      notify.error('Installation failed. Please try again.');
+      console.error("Installation failed:", error);
+      notify.error("Installation failed. Please try again.");
     }
   };
 
@@ -76,11 +82,11 @@ function InstallPrompt() {
       <div className="flex items-center space-x-4">
         <img
           src="/icons/icon-192x192.png"
-          alt="QuickBills"
+          alt="ShabanExpress"
           className="w-12 h-12 rounded-xl"
         />
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">Install QuickBills</h3>
+          <h3 className="font-semibold text-gray-900">Install ShabanExpress</h3>
           <p className="text-sm text-gray-600">
             Install our app for a better experience
           </p>
