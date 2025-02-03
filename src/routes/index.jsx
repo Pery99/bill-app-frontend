@@ -17,7 +17,7 @@ import Dashboard from "../pages/Dashboard";
 import FundWallet from "../pages/FundWallet";
 import Airtime from "../pages/Airtime";
 import Data from "../pages/Data";
-import Tv from "../pages/Tv";
+import Tv from "../pages/TV.jsx";
 // import Electricity from "../pages/Electricity";
 import Transactions from "../pages/Transactions";
 import Profile from "../pages/Profile";
