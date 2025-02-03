@@ -129,36 +129,47 @@ function Data() {
     }
   };
 
-  // Update getCurrentPlans to use new validity period extraction
-  const getCurrentPlans = () => {
-    if (!dataPlans?.[0]) return [];
-    
-    const currentNetwork = formData.network;
-    let planData;
-    
-    switch(currentNetwork) {
-      case "1":
-        planData = dataPlans[0].MTN_PLAN.ALL;
-        break;
-      case "2":
-        planData = dataPlans[0].GLO_PLAN.ALL;
-        break;
-      case "3":
-        planData = dataPlans[0]["9MOBILE_PLAN"].ALL;
-        break;
-      case "4":
-        planData = dataPlans[0].AIRTEL_PLAN.ALL;
-        break;
-      default:
-        planData = dataPlans[0].MTN_PLAN.ALL;
-    }
+  // Update getCurrentPlans function to filter for SME plans
+const getCurrentPlans = () => {
+  if (!dataPlans?.[0]) return [];
+  
+  const currentNetwork = formData.network;
+  let planData;
+  
+  switch(currentNetwork) {
+    case "1":
+      // For MTN, if it's monthly tab, only show SME plans
+      if (activeTab === "30") {
+        planData = dataPlans[0].MTN_PLAN.SME || [];
+      } else {
+        planData = dataPlans[0].MTN_PLAN.ALL || [];
+      }
+      break;
+    case "2":
+      planData = dataPlans[0].GLO_PLAN.ALL || [];
+      break;
+    case "3":
+      planData = dataPlans[0]["9MOBILE_PLAN"].ALL || [];
+      break;
+    case "4":
+      planData = dataPlans[0].AIRTEL_PLAN.ALL || [];
+      break;
+    default:
+      planData = [];
+  }
 
-    // Filter plans by selected validity period
-    return planData?.filter(plan => {
-      const planValidity = extractValidityPeriod(plan);
-      return planValidity === activeTab;
-    }) || [];
-  };
+  // Filter plans by validity period except for monthly SME plans
+  if (activeTab === "30" && currentNetwork === "1") {
+    // For monthly tab with MTN, return SME plans without filtering
+    return planData;
+  }
+
+  // For other tabs/networks, filter by validity period as before
+  return planData?.filter(plan => {
+    const planValidity = extractValidityPeriod(plan);
+    return planValidity === activeTab;
+  }) || [];
+};
 
   // Update formatValidity function to better handle special cases
   const formatValidity = (validity) => {

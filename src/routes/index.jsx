@@ -17,12 +17,12 @@ import Dashboard from "../pages/Dashboard";
 import FundWallet from "../pages/FundWallet";
 import Airtime from "../pages/Airtime";
 import Data from "../pages/Data";
-import TV from "../pages/TV";
-import Electricity from "../pages/Electricity";
+// import Electricity from "../pages/Electricity";
 import Transactions from "../pages/Transactions";
 import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
 import Support from "../pages/Support";
+import Tv from "../pages/Tv";
 
 const AppRoutes = () => {
   return (
@@ -45,8 +45,8 @@ const AppRoutes = () => {
           <Route path="/dashboard/fund-wallet" element={<FundWallet />} />
           <Route path="/dashboard/airtime" element={<Airtime />} />
           <Route path="/dashboard/data" element={<Data />} />
-          <Route path="/dashboard/tv" element={<TV />} />
-          <Route path="/dashboard/electricity" element={<Electricity />} />
+          <Route path="/dashboard/tv" element={<Tv />} />
+          {/* <Route path="/dashboard/electricity" element={<Electricity />} /> */}
           <Route path="/dashboard/transactions" element={<Transactions />} />
           <Route path="/dashboard/profile" element={<Profile />} />
           <Route path="/dashboard/support" element={<Support />} />

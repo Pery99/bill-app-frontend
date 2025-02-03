@@ -13,7 +13,7 @@ function Tv() {
   const [providers] = useState([
     { id: "GOTV", name: "GOtv", logo: "/gotv.webp" },
     { id: "DSTV", name: "DStv", logo: "/dstv.png" },
-    { id: "STARTIMES", name: "StarTimes", logo: "/startime.jpg" },
+    { id: "STARTIME", name: "StarTimes", logo: "/startime.jpg" },
   ]);
   const [selectedProvider, setSelectedProvider] = useState("");
   const [plans, setPlans] = useState([]);
