@@ -5,7 +5,7 @@ import { notify } from "../utils/toast";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import PaymentMethodSelector from "../components/PaymentMethodSelector";
 import { initializePaystack } from "../utils/paystackConfig";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 
 function Tv() {
   const user = useSelector((state) => state.auth.user);
@@ -106,19 +106,22 @@ function Tv() {
 
   const handleDirectPayment = async (selectedPlan) => {
     try {
-      const response = await api.post("/transactions/initialize-direct-payment", {
-        amount: Number(selectedPlan.plan_amount),
-        type: "tv",
-        email: user.email,
-        serviceDetails: {
-          smartCardNumber: formData.smartCardNumber,
-          provider: selectedProvider,
-          providerId: selectedProvider,
-          plan: selectedPlan.package,
-          planId: selectedPlan.id,
-          amount: selectedPlan.plan_amount
+      const response = await api.post(
+        "/transactions/initialize-direct-payment",
+        {
+          amount: Number(selectedPlan.plan_amount),
+          type: "tv",
+          email: user.email,
+          serviceDetails: {
+            smartCardNumber: formData.smartCardNumber,
+            provider: selectedProvider,
+            providerId: selectedProvider,
+            plan: selectedPlan.package,
+            planId: selectedPlan.id,
+            amount: selectedPlan.plan_amount,
+          },
         }
-      });
+      );
 
       if (response.data.data) {
         try {
@@ -127,8 +130,8 @@ function Tv() {
             amount: selectedPlan.plan_amount,
             reference: response.data.data.reference,
           });
-          
-          if (result.status === 'success') {
+
+          if (result.status === "success") {
             // Verify payment and process transaction
             const verifyResponse = await api.get(
               `/transactions/verify-payment/${result.reference}?type=tv`
@@ -145,7 +148,7 @@ function Tv() {
             }
           }
         } catch (error) {
-          if (error.message === 'Payment cancelled') {
+          if (error.message === "Payment cancelled") {
             notify.info("Payment cancelled");
           } else {
             throw error;
@@ -156,7 +159,9 @@ function Tv() {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      notify.error(error.response?.data?.message || "Failed to process payment");
+      notify.error(
+        error.response?.data?.message || "Failed to process payment"
+      );
     }
   };
 
@@ -204,7 +209,9 @@ function Tv() {
       }
     } catch (error) {
       console.error(error);
-      notify.error(error.response?.data?.error || "Failed to process subscription");
+      notify.error(
+        error.response?.data?.error || "Failed to process subscription"
+      );
     } finally {
       setLoading(false);
     }
