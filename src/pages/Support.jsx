@@ -35,7 +35,7 @@ function Support() {
     },
     {
       question: "Is my money safe?",
-      answer: "Yes, your money is completely safe. I go lie for you???",
+      answer: "Yes, your money is completely safe.",
     },
     {
       question: "How do I get a refund?",

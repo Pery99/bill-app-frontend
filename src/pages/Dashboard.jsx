@@ -87,9 +87,9 @@ function Dashboard() {
     },
     {
       id: 2,
-      title: "Wallet Balance Updates",
+      title: "Direct payment",
       description:
-        "Real-time balance updates and transaction history now available.",
+        "You can now make payment directly using paystack.",
       date: new Date(),
     },
   ];
