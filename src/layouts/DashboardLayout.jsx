@@ -43,12 +43,12 @@ function DashboardLayout() {
       icon: TvIcon,
       //disabled: true,
     },
-    // {
-    //   name: "Buy Electricity",
-    //   href: "/dashboard/electricity",
-    //   icon: LightBulbIcon,
-    //   disabled: true,
-    // },
+    {
+      name: "Buy Electricity",
+      href: "/dashboard/electricity",
+      icon: LightBulbIcon,
+      // disabled: true,
+    },
     { name: "Transactions", href: "/dashboard/transactions", icon: ClockIcon },
     {
       name: "Support",

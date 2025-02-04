@@ -18,7 +18,7 @@ import FundWallet from "../pages/FundWallet";
 import Airtime from "../pages/Airtime";
 import Data from "../pages/Data";
 import Tv from "../pages/TV.jsx";
-// import Electricity from "../pages/Electricity";
+import Electricity from "../pages/Electricity";
 import Transactions from "../pages/Transactions";
 import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
@@ -46,7 +46,7 @@ const AppRoutes = () => {
           <Route path="/dashboard/airtime" element={<Airtime />} />
           <Route path="/dashboard/data" element={<Data />} />
           <Route path="/dashboard/tv" element={<Tv />} />
-          {/* <Route path="/dashboard/electricity" element={<Electricity />} /> */}
+          <Route path="/dashboard/electricity" element={<Electricity />} />
           <Route path="/dashboard/transactions" element={<Transactions />} />
           <Route path="/dashboard/profile" element={<Profile />} />
           <Route path="/dashboard/support" element={<Support />} />
