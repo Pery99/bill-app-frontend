@@ -467,9 +467,9 @@ function Home() {
           <div>
             <h4 className="text-sm font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-gray-400 text-sm">
-              <li>support@ShabanExpress.com</li>
-              <li>+234 704 429 9948</li>
-              <li>Ondo, Nigeria</li>
+              <li>shabaanabdulrazaq@gmail.com</li>
+              <li>+234 704 345 1114</li>
+              <li>5 faith street sango ota</li>
             </ul>
           </div>
         </div>

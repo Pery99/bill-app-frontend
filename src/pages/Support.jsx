@@ -10,9 +10,9 @@ function Support() {
   const [openFaq, setOpenFaq] = useState(null);
 
   const supportData = {
-    email: "ShabanExpresshelp@gmail.com",
-    whatsapp: "+234 704 429 9948",
-    phone: "+234 704 429 9948",
+    email: "shabaanabdulrazaq@gmail.com",
+    whatsapp: "+234 704 345 1114",
+    phone: "+234 704 345 1114",
     hours: "6:00 AM - 10:00 PM (WAT)",
     workdays: "Monday - Sunday",
   };
