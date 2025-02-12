@@ -3,7 +3,7 @@ import api from "../utils/api";
 import { notify } from "../utils/toast";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import PaymentMethodSelector from "../components/PaymentMethodSelector";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 import { initializePaystack } from "../utils/paystackConfig";
 
 function Data() {
@@ -31,27 +31,49 @@ function Data() {
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState("wallet");
 
+  // Add new ref for data plans dropdown
+  const dataPlansDropdownRef = useRef(null);
+  const [isDataPlansDropdownOpen, setIsDataPlansDropdownOpen] = useState(false);
+
+  // Add useEffect for data plans dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        dataPlansDropdownRef.current &&
+        !dataPlansDropdownRef.current.contains(event.target)
+      ) {
+        setIsDataPlansDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Update function to extract validity period from plan name and duration
   const extractValidityPeriod = (plan) => {
     const validity = plan.month_validate.toLowerCase();
-    
+
     // Handle special cases for monthly plans
-    if (validity.includes('30') || validity.includes('month')) {
-      return '30';
+    if (validity.includes("30") || validity.includes("month")) {
+      return "30";
     }
-    
+
     // Handle daily plans
-    if (validity.includes('24 hrs') || validity.includes('24hrs') || validity.includes('1 day')) {
-      return '1';
+    if (
+      validity.includes("24 hrs") ||
+      validity.includes("24hrs") ||
+      validity.includes("1 day")
+    ) {
+      return "1";
     }
 
     // Extract numeric value
     const match = validity.match(/^(\d+)/);
-    if (!match) return '30'; // Default to 30 if no number found
+    if (!match) return "30"; // Default to 30 if no number found
 
     const days = match[1];
     // Normalize 48hrs to 2 days
-    if (validity.includes('hrs') || validity.includes('hours')) {
+    if (validity.includes("hrs") || validity.includes("hours")) {
       return Math.ceil(parseInt(days) / 24).toString();
     }
 
@@ -63,8 +85,8 @@ function Data() {
     if (!dataPlans?.[0]) return [];
     const currentNetwork = formData.network;
     let planData;
-    
-    switch(currentNetwork) {
+
+    switch (currentNetwork) {
       case "1":
         planData = dataPlans[0].MTN_PLAN.ALL || [];
         break;
@@ -82,11 +104,13 @@ function Data() {
     }
 
     // Get unique validity periods with proper parsing
-    const periods = [...new Set(planData.map(plan => extractValidityPeriod(plan)))];
+    const periods = [
+      ...new Set(planData.map((plan) => extractValidityPeriod(plan))),
+    ];
 
     // Sort periods numerically and filter out invalid ones
     return periods
-      .filter(period => !isNaN(period))
+      .filter((period) => !isNaN(period))
       .sort((a, b) => Number(a) - Number(b));
   };
 
@@ -130,63 +154,65 @@ function Data() {
   };
 
   // Update getCurrentPlans function to filter for SME plans
-const getCurrentPlans = () => {
-  if (!dataPlans?.[0]) return [];
-  
-  const currentNetwork = formData.network;
-  let planData;
-  
-  switch(currentNetwork) {
-    case "1":
-      // For MTN, if it's monthly tab, only show SME plans
-      if (activeTab === "30") {
-        planData = dataPlans[0].MTN_PLAN.SME || [];
-      } else {
-        planData = dataPlans[0].MTN_PLAN.ALL || [];
-      }
-      break;
-    case "2":
-      planData = dataPlans[0].GLO_PLAN.ALL || [];
-      break;
-    case "3":
-      planData = dataPlans[0]["9MOBILE_PLAN"].ALL || [];
-      break;
-    case "4":
-      planData = dataPlans[0].AIRTEL_PLAN.ALL || [];
-      break;
-    default:
-      planData = [];
-  }
+  const getCurrentPlans = () => {
+    if (!dataPlans?.[0]) return [];
 
-  // Filter plans by validity period except for monthly SME plans
-  if (activeTab === "30" && currentNetwork === "1") {
-    // For monthly tab with MTN, return SME plans without filtering
-    return planData;
-  }
+    const currentNetwork = formData.network;
+    let planData;
 
-  // For other tabs/networks, filter by validity period as before
-  return planData?.filter(plan => {
-    const planValidity = extractValidityPeriod(plan);
-    return planValidity === activeTab;
-  }) || [];
-};
+    switch (currentNetwork) {
+      case "1":
+        // For MTN, if it's monthly tab, only show SME plans
+        if (activeTab === "30") {
+          planData = dataPlans[0].MTN_PLAN.SME || [];
+        } else {
+          planData = dataPlans[0].MTN_PLAN.ALL || [];
+        }
+        break;
+      case "2":
+        planData = dataPlans[0].GLO_PLAN.ALL || [];
+        break;
+      case "3":
+        planData = dataPlans[0]["9MOBILE_PLAN"].ALL || [];
+        break;
+      case "4":
+        planData = dataPlans[0].AIRTEL_PLAN.ALL || [];
+        break;
+      default:
+        planData = [];
+    }
+
+    // Filter plans by validity period except for monthly SME plans
+    if (activeTab === "30" && currentNetwork === "1") {
+      // For monthly tab with MTN, return SME plans without filtering
+      return planData;
+    }
+
+    // For other tabs/networks, filter by validity period as before
+    return (
+      planData?.filter((plan) => {
+        const planValidity = extractValidityPeriod(plan);
+        return planValidity === activeTab;
+      }) || []
+    );
+  };
 
   // Update formatValidity function to better handle special cases
   const formatValidity = (validity) => {
-    if (!validity) return '';
-    
+    if (!validity) return "";
+
     const lowerValidity = validity.toLowerCase();
-    
+
     // Handle monthly cases
-    if (lowerValidity.includes('30') || lowerValidity.includes('month')) {
-      return 'Monthly';
+    if (lowerValidity.includes("30") || lowerValidity.includes("month")) {
+      return "Monthly";
     }
-    
+
     // Handle hour cases
-    if (lowerValidity.includes('hrs') || lowerValidity.includes('hours')) {
+    if (lowerValidity.includes("hrs") || lowerValidity.includes("hours")) {
       const hours = parseInt(lowerValidity);
       if (isNaN(hours)) return validity;
-      if (hours === 24) return 'Daily';
+      if (hours === 24) return "Daily";
       return `${Math.ceil(hours / 24)} Days`;
     }
 
@@ -195,15 +221,15 @@ const getCurrentPlans = () => {
     if (!daysMatch) return validity;
 
     const days = parseInt(daysMatch[1]);
-    
+
     // Handle special cases
-    if (days === 1) return 'Daily';
-    if (days === 7) return 'Weekly';
-    if (days === 14) return '2 Weeks';
-    if (days === 30) return 'Monthly';
-    if (days === 90) return '3 Months';
-    if (days === 120) return '4 Months';
-    if (days === 365) return 'Annual';
+    if (days === 1) return "Daily";
+    if (days === 7) return "Weekly";
+    if (days === 14) return "2 Weeks";
+    if (days === 30) return "Monthly";
+    if (days === 90) return "3 Months";
+    if (days === 120) return "4 Months";
+    if (days === 365) return "Annual";
 
     return `${days} Days`;
   };
@@ -211,11 +237,11 @@ const getCurrentPlans = () => {
   // Update formatPlanType for better display
   const formatPlanType = (type) => {
     const typeMap = {
-      'CORPORATE GIFTING': 'Corporate',
-      'DATA SHARE': 'Sharing',
-      'AWOOF DATA': 'Awoof',
-      'SME': 'SME',
-      'SME2': 'SME Plus'
+      "CORPORATE GIFTING": "Corporate",
+      "DATA SHARE": "Sharing",
+      "AWOOF DATA": "Awoof",
+      SME: "SME",
+      SME2: "SME Plus",
     };
     return typeMap[type] || type;
   };
@@ -283,24 +309,25 @@ const getCurrentPlans = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  
   // Add direct payment handler
   const handleDirectPayment = async (selectedPlan) => {
-    
     try {
-      const response = await api.post("/transactions/initialize-direct-payment", {
-        amount: Number(selectedPlan.plan_amount),
-        type: "data",
-        email: user.email,
-        serviceDetails: {
-          phone: formData.phoneNumber,
-          provider: formData.network,
-          network: formData.network,          
-          planId: selectedPlan.dataplan_id,   
-          plan: selectedPlan.dataplan_id,   
-          amount: selectedPlan.plan_amount
+      const response = await api.post(
+        "/transactions/initialize-direct-payment",
+        {
+          amount: Number(selectedPlan.plan_amount),
+          type: "data",
+          email: user.email,
+          serviceDetails: {
+            phone: formData.phoneNumber,
+            provider: formData.network,
+            network: formData.network,
+            planId: selectedPlan.dataplan_id,
+            plan: selectedPlan.dataplan_id,
+            amount: selectedPlan.plan_amount,
+          },
         }
-      });
+      );
 
       if (response.data.data) {
         try {
@@ -309,8 +336,8 @@ const getCurrentPlans = () => {
             amount: selectedPlan.plan_amount,
             reference: response.data.data.reference,
           });
-          
-          if (result.status === 'success') {
+
+          if (result.status === "success") {
             // Verify payment and process transaction
             const verifyResponse = await api.get(
               `/transactions/verify-payment/${result.reference}?type=data`
@@ -324,7 +351,7 @@ const getCurrentPlans = () => {
             }
           }
         } catch (error) {
-          if (error.message === 'Payment cancelled') {
+          if (error.message === "Payment cancelled") {
             notify.info("Payment cancelled");
           } else {
             throw error;
@@ -335,7 +362,9 @@ const getCurrentPlans = () => {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      notify.error(error.response?.data?.message || "Failed to process payment");
+      notify.error(
+        error.response?.data?.message || "Failed to process payment"
+      );
     }
   };
 
@@ -361,10 +390,10 @@ const getCurrentPlans = () => {
 
       // Updated request body to use IDs
       const response = await api.post("/transactions/data", {
-        mobile_number: formData.phoneNumber,   
-        network: formData.network,             
-        plan: selectedPlan.dataplan_id,        
-        amount: Number(selectedPlan.plan_amount)
+        mobile_number: formData.phoneNumber,
+        network: formData.network,
+        plan: selectedPlan.dataplan_id,
+        amount: Number(selectedPlan.plan_amount),
       });
 
       if (response.data.Status === "successful") {
@@ -414,48 +443,176 @@ const getCurrentPlans = () => {
           <InformationCircleIcon className="w-5 h-5 text-blue-500 mt-0.5" />
           <div className="text-sm text-blue-700">
             <p className="font-medium mb-1">Data Bundle Purchase</p>
-            <p>
-              Select network, enter phone number, and choose your preferred data
-              plan
-            </p>
+            <p>Enter phone number and select your preferred data plan</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Update Network and Phone Number Section to be inline */}
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Network Dropdown - adjust width */}
-            <div className="w-full md:w-1/3">
-              <label className="text-sm font-medium text-gray-700 block mb-2">
-                Select Network
-              </label>
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className={`w-full flex items-center space-x-3 p-2.5 rounded-lg border ${
-                    errors.network ? "border-red-500" : "border-gray-300"
-                  } bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          {/* Phone Number Input */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phoneNumber"
+              className={`w-full input-field ${
+                errors.phoneNumber ? "border-red-500" : ""
+              }`}
+              placeholder="Enter phone number"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
+            )}
+          </div>
+
+          {/* Network Selection */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-2">
+              Select Network
+            </label>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className={`w-full flex items-center justify-between space-x-3 p-2.5 rounded-lg border ${
+                  errors.network ? "border-red-500" : "border-gray-300"
+                } bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              >
+                {formData.network ? (
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={
+                        networks.find((n) => n.id === formData.network)?.logo
+                      }
+                      alt="Network Logo"
+                      className="w-8 h-8"
+                    />
+                    <span>
+                      {networks.find((n) => n.id === formData.network)?.name}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-gray-500">Select Network</span>
+                )}
+                <svg
+                  className={`w-5 h-5 transition-transform ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {formData.network ? (
-                    <>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                  {networks.map((network) => (
+                    <button
+                      key={network.id}
+                      type="button"
+                      onClick={() => handleNetworkChange(network.id)}
+                      className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 ${
+                        formData.network === network.id ? "bg-blue-50" : ""
+                      }`}
+                    >
                       <img
-                        src={
-                          networks.find((n) => n.id === formData.network)?.logo
-                        }
-                        alt="Network Logo"
+                        src={network.logo}
+                        alt={network.name}
                         className="w-8 h-8"
                       />
                       <span className="flex-grow text-left">
-                        {networks.find((n) => n.id === formData.network)?.name}
+                        {network.name}
                       </span>
-                    </>
+                      {formData.network === network.id && (
+                        <svg
+                          className="w-5 h-5 text-blue-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {errors.network && (
+              <p className="text-red-500 text-xs mt-1">{errors.network}</p>
+            )}
+          </div>
+
+          {/* Data Plans Selection */}
+          {isLoadingPlans ? (
+            <div className="py-6 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-gray-500">Loading data plans...</p>
+            </div>
+          ) : (
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Select Data Plan
+              </label>
+              <div className="relative" ref={dataPlansDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsDataPlansDropdownOpen(!isDataPlansDropdownOpen)
+                  }
+                  className={`w-full flex items-center justify-between p-2.5 rounded-lg border ${
+                    errors.planId ? "border-red-500" : "border-gray-300"
+                  } bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                >
+                  {formData.planId ? (
+                    <div className="flex justify-between w-full">
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {
+                            getCurrentPlans().find(
+                              (p) => p.dataplan_id === formData.planId
+                            )?.plan
+                          }
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatValidity(
+                            getCurrentPlans().find(
+                              (p) => p.dataplan_id === formData.planId
+                            )?.month_validate
+                          )}
+                        </span>
+                      </div>
+                      <span className="font-bold">
+                        ₦
+                        {Number(
+                          getCurrentPlans().find(
+                            (p) => p.dataplan_id === formData.planId
+                          )?.plan_amount
+                        ).toLocaleString()}
+                      </span>
+                    </div>
                   ) : (
-                    <span className="text-gray-500">Select Network</span>
+                    <span className="text-gray-500">Select Data Plan</span>
                   )}
                   <svg
-                    className={`w-5 h-5 transition-transform ${
-                      isDropdownOpen ? "rotate-180" : ""
+                    className={`w-5 h-5 ml-2 transition-transform ${
+                      isDataPlansDropdownOpen ? "rotate-180" : ""
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -470,156 +627,57 @@ const getCurrentPlans = () => {
                   </svg>
                 </button>
 
-                {isDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
-                    {networks.map((network) => (
-                      <button
-                        key={network.id}
-                        type="button"
-                        onClick={() => handleNetworkChange(network.id)}
-                        className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 ${
-                          formData.network === network.id ? "bg-blue-50" : ""
-                        }`}
-                      >
-                        <img
-                          src={network.logo}
-                          alt={network.name}
-                          className="w-8 h-8"
-                        />
-                        <span className="flex-grow text-left">
-                          {network.name}
-                        </span>
-                        {formData.network === network.id && (
-                          <svg
-                            className="w-5 h-5 text-blue-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
+                {isDataPlansDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                    {getCurrentPlans().length > 0 ? (
+                      getCurrentPlans().map((plan) => (
+                        <button
+                          key={plan.dataplan_id}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange({
+                              target: {
+                                name: "planId",
+                                value: plan.dataplan_id,
+                              },
+                            });
+                            setIsDataPlansDropdownOpen(false);
+                          }}
+                          className={`w-full p-4 text-left hover:bg-gray-50 ${
+                            formData.planId === plan.dataplan_id
+                              ? "bg-blue-50"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">{plan.plan}</div>
+                              <div className="text-sm text-gray-500">
+                                {formatValidity(plan.month_validate)} •{" "}
+                                {formatPlanType(plan.plan_type)}
+                              </div>
+                            </div>
+                            <div className="font-bold">
+                              ₦{Number(plan.plan_amount).toLocaleString()}
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        No data plans available
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-              {errors.network && (
-                <p className="text-red-500 text-xs mt-1">{errors.network}</p>
+              {errors.planId && (
+                <p className="text-red-500 text-xs mt-1">{errors.planId}</p>
               )}
             </div>
-
-            {/* Phone Number Input - adjust width */}
-            <div className="w-full md:w-2/3">
-              <label className="text-sm font-medium text-gray-700 block mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phoneNumber"
-                className={`input-field ${
-                  errors.phoneNumber ? "border-red-500" : ""
-                }`}
-                placeholder="Enter phone number"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                required
-              />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.phoneNumber}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Plan Type Tabs */}
-          {isLoadingPlans ? (
-            <div className="py-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-gray-500">Loading data plans...</p>
-            </div>
-          ) : (
-            <>
-              {/* Validity Period Tabs */}
-              <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-4 overflow-x-auto">
-                  {getValidityPeriods().map((period) => (
-                    <button
-                      key={period}
-                      type="button"
-                      onClick={() => {
-                        setActiveTab(period);
-                        setFormData(prev => ({ ...prev, planId: "" }));
-                      }}
-                      className={`
-                        whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm
-                        ${activeTab === period
-                          ? 'border-blue-500 text-blue-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-                      `}
-                    >
-                      {period === "1" ? "Daily" : 
-                       period === "7" ? "Weekly" :
-                       period === "14" ? "2 Weeks" :
-                       period === "30" ? "Monthly" :
-                       period === "120" ? "4 Months" :
-                       period === "365" ? "Annual" :
-                       `${period} Days`}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-
-              {/* Data Plans Grid - Updated to conditionally show labels */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr gap-3 mt-4">
-                {getCurrentPlans().length > 0 ? (
-                  getCurrentPlans().map((plan) => (
-                    <button
-                      key={plan.dataplan_id}
-                      type="button"
-                      onClick={() => handleInputChange({
-                        target: { name: "planId", value: plan.dataplan_id }
-                      })}
-                      className={`p-3 rounded-lg border-2 text-left transition-all h-full flex flex-col ${
-                        formData.planId === plan.dataplan_id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-blue-200"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <div className="font-medium text-base">{plan.plan}</div>
-                        <span className="px-2 py-0.5 text-[10px] leading-4 font-medium rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
-                          {formatPlanType(plan.plan_type)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-xs text-gray-500">
-                        <span>{formatValidity(plan.month_validate)}</span>
-                      </div>
-                      <div className="text-base font-bold mt-auto pt-2">
-                        ₦{Number(plan.plan_amount).toLocaleString()}
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-8 text-gray-500">
-                    No data plans available for this category
-                  </div>
-                )}
-              </div>
-            </>
           )}
 
-          {errors.planId && (
-            <p className="text-red-500 text-xs mt-1">{errors.planId}</p>
-          )}
-
-          {/* Add Payment Method Selector */}
+          {/* Payment Method and Submit Button */}
           {formData.network && formData.planId && formData.phoneNumber && (
             <PaymentMethodSelector
               selectedMethod={paymentMethod}
