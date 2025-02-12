@@ -153,47 +153,39 @@ function Data() {
     }
   };
 
-  // Update getCurrentPlans function to filter for SME plans
+  // Update getCurrentPlans function to handle the correct data format
   const getCurrentPlans = () => {
-    if (!dataPlans?.[0]) return [];
+    if (!dataPlans) return [];
 
     const currentNetwork = formData.network;
     let planData;
 
     switch (currentNetwork) {
-      case "1":
-        // For MTN, if it's monthly tab, only show SME plans
-        if (activeTab === "30") {
-          planData = dataPlans[0].MTN_PLAN.SME || [];
+      case "1": // MTN
+        if (activeTab === "CORPORATE") {
+          planData = dataPlans.MTN_PLAN?.CORPORATE || [];
+        } else if (activeTab === "SME") {
+          planData = dataPlans.MTN_PLAN?.SME || [];
         } else {
-          planData = dataPlans[0].MTN_PLAN.ALL || [];
+          planData = dataPlans.MTN_PLAN?.ALL || [];
         }
         break;
-      case "2":
-        planData = dataPlans[0].GLO_PLAN.ALL || [];
+      case "2": // GLO
+        planData = dataPlans.GLO_PLAN?.ALL || [];
         break;
-      case "3":
-        planData = dataPlans[0]["9MOBILE_PLAN"].ALL || [];
+      case "3": // 9MOBILE
+        planData = dataPlans["9MOBILE_PLAN"]?.ALL || [];
         break;
-      case "4":
-        planData = dataPlans[0].AIRTEL_PLAN.ALL || [];
+      case "4": // AIRTEL
+        planData = dataPlans.AIRTEL_PLAN?.ALL || [];
         break;
       default:
         planData = [];
     }
 
-    // Filter plans by validity period except for monthly SME plans
-    if (activeTab === "30" && currentNetwork === "1") {
-      // For monthly tab with MTN, return SME plans without filtering
-      return planData;
-    }
-
-    // For other tabs/networks, filter by validity period as before
-    return (
-      planData?.filter((plan) => {
-        const planValidity = extractValidityPeriod(plan);
-        return planValidity === activeTab;
-      }) || []
+    // Sort plans by amount
+    return planData.sort(
+      (a, b) => Number(a.plan_amount) - Number(b.plan_amount)
     );
   };
 
@@ -252,14 +244,8 @@ function Data() {
       setIsLoadingPlans(true);
       try {
         const response = await api.get("/transactions/data-plans");
-        if (response.data && Array.isArray(response.data) && response.data[0]) {
+        if (response.data) {
           setDataPlans(response.data);
-          // Set monthly tab as default
-          const periods = getValidityPeriods();
-          if (!periods.includes("30")) {
-            // If no monthly plans, set to first available period
-            setActiveTab(periods[0] || "30");
-          }
         } else {
           throw new Error("Invalid data format received");
         }
@@ -590,13 +576,19 @@ function Data() {
                             )?.plan
                           }
                         </span>
-                        <span className="text-sm text-gray-500">
-                          {formatValidity(
+                        <div className="text-sm text-gray-500">
+                          {
                             getCurrentPlans().find(
                               (p) => p.dataplan_id === formData.planId
                             )?.month_validate
+                          }{" "}
+                          •
+                          {formatPlanType(
+                            getCurrentPlans().find(
+                              (p) => p.dataplan_id === formData.planId
+                            )?.plan_type
                           )}
-                        </span>
+                        </div>
                       </div>
                       <span className="font-bold">
                         ₦
@@ -653,7 +645,7 @@ function Data() {
                             <div>
                               <div className="font-medium">{plan.plan}</div>
                               <div className="text-sm text-gray-500">
-                                {formatValidity(plan.month_validate)} •{" "}
+                                {plan.month_validate} •{" "}
                                 {formatPlanType(plan.plan_type)}
                               </div>
                             </div>

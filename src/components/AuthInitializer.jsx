@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserData, selectors } from "../store/slices/authSlice";
-import { authUtils } from "../utils/auth";
+import { fetchUserData, selectors, setAuth } from "../store/slices/authSlice";
 import { TOKEN_KEY } from "../utils/constants";
 
 const AuthInitializer = ({ children }) => {
@@ -10,20 +9,29 @@ const AuthInitializer = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedToken =
-        authUtils.getToken() || localStorage.getItem(TOKEN_KEY);
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+      const storedUser = localStorage.getItem("user");
 
-      if (storedToken && !user && !loading) {
-        try {
-          await dispatch(fetchUserData()).unwrap();
-        } catch (error) {
-          console.error("Failed to fetch user data:", error);
-        }
+      // Debug log
+      console.log("Initializing Auth:", {
+        storedToken: !!storedToken,
+        storedUser: JSON.parse(storedUser || "{}"),
+        currentUser: user,
+      });
+
+      if (storedToken && storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        dispatch(
+          setAuth({
+            token: storedToken,
+            user: parsedUser,
+          })
+        );
       }
     };
 
     initializeAuth();
-  }, [dispatch, token, user, loading]);
+  }, []);
 
   return children;
 };

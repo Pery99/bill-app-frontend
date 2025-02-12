@@ -6,7 +6,8 @@ import api from "../../utils/api";
 
 const initialState = {
   user: null,
-  token: authUtils.getToken(),
+  token: null,
+  isAuthenticated: false,
   loading: false,
   error: null,
   userFetched: false,
@@ -118,6 +119,23 @@ const authSlice = createSlice({
       state.token = authUtils.getToken();
       state.userFetched = false;
     },
+    setAuth: (state, action) => {
+      const { user, token } = action.payload;
+      state.user = user;
+      state.token = token;
+      state.isAuthenticated = true;
+      // Store complete user data including role in localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem(TOKEN_KEY, token);
+    },
+    resetAuth: (state) => {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      // Clear user data from localStorage
+      localStorage.removeItem("user");
+      localStorage.removeItem(TOKEN_KEY);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -153,11 +171,18 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.userFetched = true; // Set the flag when user is fetched
+        state.isAuthenticated = true;
+        // Store updated user data
+        localStorage.setItem("user", JSON.stringify(action.payload));
       })
       .addCase(fetchUserData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.userFetched = true; // Set the flag even on error
+        state.isAuthenticated = false;
+        // Clear data on fetch failure
+        localStorage.removeItem("user");
+        localStorage.removeItem(TOKEN_KEY);
         if (action.payload?.status === 401) {
           state.token = null;
           state.user = null;
@@ -195,7 +220,7 @@ const authSlice = createSlice({
 });
 
 // Single consolidated export section
-export const { resetAuth, setAuthError, initAuth } = authSlice.actions;
+export const { resetAuth, setAuthError, initAuth, setAuth } = authSlice.actions;
 
 // Selectors
 export const selectors = {

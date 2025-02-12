@@ -6,6 +6,12 @@ import { Toaster } from "react-hot-toast";
 import AuthInitializer from "./components/AuthInitializer";
 import AppRoutes from "./routes";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AdminRoute from "./components/AdminRoute";
+import AdminDataPlans from "./pages/admin/DataPlans";
+import { Route, Routes } from "react-router-dom";
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminUsers from "./pages/admin/Users";
+import AdminLayout from "./components/layouts/AdminLayout";
 
 function App() {
   return (
@@ -19,10 +25,25 @@ function App() {
           }
           persistor={persistor}
         >
-          <AuthInitializer>
-            <AppRoutes />
-            <Toaster position="top-right" />
-          </AuthInitializer>
+          <Routes>
+            {/* Add new admin routes */}
+            <Route
+              path="/admin/*"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <Routes>
+                      <Route path="/" element={<AdminDashboard />} />
+                      <Route path="/users" element={<AdminUsers />} />
+                      <Route path="/data-plans" element={<AdminDataPlans />} />
+                    </Routes>
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route path="/*" element={<AppRoutes />} />
+          </Routes>
+          <Toaster position="top-right" />
         </PersistGate>
       </Provider>
     </ErrorBoundary>
