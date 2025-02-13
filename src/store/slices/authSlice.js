@@ -21,9 +21,18 @@ export const loginUser = createAsyncThunk(
       const { token, user } = response.data;
 
       if (token && user) {
-        // Pass remember preference to setToken
+        // Ensure we have the role from the response
+        const userWithRole = {
+          ...user,
+          role: user.role || (await fetchUserRole(token)), // Fallback to fetching role
+        };
+
+        // Store everything properly
         authUtils.setToken(token, remember);
-        return { user, token };
+        localStorage.setItem("user", JSON.stringify(userWithRole));
+        localStorage.setItem("userRole", userWithRole.role);
+
+        return { user: userWithRole, token };
       }
       return rejectWithValue("Invalid credentials");
     } catch (error) {
@@ -32,11 +41,27 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Add helper function to fetch user role if needed
+const fetchUserRole = async (token) => {
+  try {
+    const response = await api.get("/auth/me");
+    return response.data.role;
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return null;
+  }
+};
+
 export const fetchUserData = createAsyncThunk(
   "auth/fetchUserData",
   async (_, { rejectWithValue }) => {
     try {
-      return await authService.getCurrentUser();
+      const response = await api.get("/auth/me");
+      // Ensure we store the role immediately when we get it
+      if (response.data.role) {
+        localStorage.setItem("userRole", response.data.role);
+      }
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch user data");
     }
@@ -135,6 +160,8 @@ const authSlice = createSlice({
       // Clear user data from localStorage
       localStorage.removeItem("user");
       localStorage.removeItem(TOKEN_KEY);
+      // Clear role when logging out
+      localStorage.removeItem("userRole");
     },
   },
   extraReducers: (builder) => {
@@ -158,6 +185,11 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        state.isAuthenticated = true;
+        // Ensure role is set in state
+        if (action.payload.user.role) {
+          localStorage.setItem("userRole", action.payload.user.role);
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -172,8 +204,11 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.userFetched = true; // Set the flag when user is fetched
         state.isAuthenticated = true;
-        // Store updated user data
+        // Update both user data and role in localStorage
         localStorage.setItem("user", JSON.stringify(action.payload));
+        if (action.payload?.role) {
+          localStorage.setItem("userRole", action.payload.role);
+        }
       })
       .addCase(fetchUserData.rejected, (state, action) => {
         state.loading = false;

@@ -12,6 +12,7 @@ import { Route, Routes } from "react-router-dom";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminLayout from "./components/layouts/AdminLayout";
+import AdminTransactions from "./pages/admin/Transactions";
 
 function App() {
   return (
@@ -36,6 +37,10 @@ function App() {
                       <Route path="/" element={<AdminDashboard />} />
                       <Route path="/users" element={<AdminUsers />} />
                       <Route path="/data-plans" element={<AdminDataPlans />} />
+                      <Route
+                        path="/transactions"
+                        element={<AdminTransactions />}
+                      />
                     </Routes>
                   </AdminLayout>
                 </AdminRoute>

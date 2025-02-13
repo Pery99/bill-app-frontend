@@ -1,37 +1,60 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserData, selectors, setAuth } from "../store/slices/authSlice";
-import { TOKEN_KEY } from "../utils/constants";
+import { useNavigate, useLocation } from "react-router-dom";
+import { fetchUserData } from "../store/slices/authSlice";
 
 const AuthInitializer = ({ children }) => {
   const dispatch = useDispatch();
-  const { token, user, loading } = useSelector(selectors.selectAuth);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = localStorage.getItem(TOKEN_KEY);
-      const storedUser = localStorage.getItem("user");
+    const initAuth = async () => {
+      if (localStorage.getItem("token")) {
+        try {
+          const result = await dispatch(fetchUserData()).unwrap();
 
-      // Debug log
-      console.log("Initializing Auth:", {
-        storedToken: !!storedToken,
-        storedUser: JSON.parse(storedUser || "{}"),
-        currentUser: user,
-      });
+          // Ensure we store the role properly
+          if (result && result.role) {
+            localStorage.setItem("userRole", result.role);
+          }
 
-      if (storedToken && storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        dispatch(
-          setAuth({
-            token: storedToken,
-            user: parsedUser,
-          })
-        );
+          // Get stored user data
+          const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+          if (storedUser && storedUser.role) {
+            localStorage.setItem("userRole", storedUser.role);
+          }
+
+          // Handle routing
+          if (result?.role === "admin" || storedUser?.role === "admin") {
+            if (!location.pathname.startsWith("/admin")) {
+              navigate("/admin", { replace: true });
+            }
+          } else {
+            if (location.pathname.startsWith("/admin")) {
+              navigate("/dashboard", { replace: true });
+            }
+          }
+        } catch (error) {
+          console.error("Auth initialization failed:", error);
+          localStorage.removeItem("userRole");
+          navigate("/login", { replace: true });
+        }
       }
     };
 
-    initializeAuth();
-  }, []);
+    initAuth();
+  }, [dispatch]);
+
+  // Don't render children while initial auth check is happening
+  if (loading && !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return children;
 };

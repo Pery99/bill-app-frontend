@@ -11,9 +11,10 @@ function Login() {
     remember: true,
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, token } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // Only redirect if token exists and we're not on the login page
@@ -47,13 +48,27 @@ function Login() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const result = await dispatch(loginUser(formData));
+    setLoading(true);
+    try {
+      const result = await dispatch(loginUser(formData)).unwrap();
 
-    if (result.meta.requestStatus === "fulfilled") {
-      notify.success("Welcome back!");
-      handleSuccess();
-    } else if (result.payload) {
-      notify.error(result.payload);
+      // Store role in localStorage immediately after successful login
+      localStorage.setItem("userRole", result.user.role);
+
+      // Clear any existing navigation states
+      window.history.replaceState({}, "");
+
+      if (result.user.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+
+      notify.success("Login successful");
+    } catch (error) {
+      notify.error(error || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 

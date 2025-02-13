@@ -1,20 +1,44 @@
-import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUserData } from "../store/slices/authSlice";
 
 const AdminRoute = ({ children }) => {
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
-  // Debug logs
-  console.log("Auth State:", { isAuthenticated, userRole: user?.role });
-  console.log("Stored User:", storedUser);
+  useEffect(() => {
+    const verifyAdminStatus = async () => {
+      try {
+        // If we don't have a role, fetch fresh user data
+        if (isAuthenticated && !user?.role) {
+          const result = await dispatch(fetchUserData()).unwrap();
+          if (result.role !== "admin") {
+            navigate("/dashboard", { replace: true });
+          }
+        }
+      } catch (error) {
+        console.error("Admin verification failed:", error);
+        navigate("/dashboard", { replace: true });
+      }
+    };
 
-  // Simplified check
-  if (user?.role === "admin" || storedUser?.role === "admin") {
-    return children;
+    verifyAdminStatus();
+  }, [isAuthenticated, user, dispatch, navigate]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  return <Navigate to="/dashboard" replace />;
+  const isAdmin =
+    user?.role === "admin" || localStorage.getItem("userRole") === "admin";
+
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
 };
 
 export default AdminRoute;

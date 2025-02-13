@@ -8,6 +8,7 @@ import {
   CubeIcon,
   Bars3Icon,
   XMarkIcon,
+  ClipboardDocumentListIcon, // Add this import
 } from "@heroicons/react/24/outline";
 
 const AdminLayout = ({ children }) => {
@@ -21,6 +22,12 @@ const AdminLayout = ({ children }) => {
     { name: "Dashboard", href: "/admin", icon: HomeIcon },
     { name: "Users", href: "/admin/users", icon: UsersIcon },
     { name: "Data Plans", href: "/admin/data-plans", icon: CubeIcon },
+    // Add Transactions link
+    {
+      name: "Transactions",
+      href: "/admin/transactions",
+      icon: ClipboardDocumentListIcon,
+    },
   ];
 
   const handleLogout = async () => {
