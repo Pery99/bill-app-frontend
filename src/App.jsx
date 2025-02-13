@@ -11,7 +11,7 @@ import AdminDataPlans from "./pages/admin/DataPlans";
 import { Route, Routes } from "react-router-dom";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
-import AdminLayout from "./components/layouts/AdminLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import AdminTransactions from "./pages/admin/Transactions";
 
 function App() {

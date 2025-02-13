@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../store/slices/authSlice";
+import { logout } from "../store/slices/authSlice";
 import {
   HomeIcon,
   UsersIcon,
   CubeIcon,
   Bars3Icon,
   XMarkIcon,
-  ClipboardDocumentListIcon, // Add this import
+  ClipboardDocumentListIcon,
+  BriefcaseIcon
 } from "@heroicons/react/24/outline";
 
 const AdminLayout = ({ children }) => {
@@ -22,12 +23,17 @@ const AdminLayout = ({ children }) => {
     { name: "Dashboard", href: "/admin", icon: HomeIcon },
     { name: "Users", href: "/admin/users", icon: UsersIcon },
     { name: "Data Plans", href: "/admin/data-plans", icon: CubeIcon },
-    // Add Transactions link
     {
       name: "Transactions",
       href: "/admin/transactions",
       icon: ClipboardDocumentListIcon,
     },
+    {
+      name: "Home",
+      href: "/dashboard",
+      icon: BriefcaseIcon,
+    },
+
   ];
 
   const handleLogout = async () => {

@@ -113,8 +113,8 @@ function Electricity() {
           serviceDetails: {
             meter_number: formData.meterNumber,
             disco_name: formData.disco,
-            meter_type: formData.meterType,
-            amount: formData.amount,
+            meter_type: formData.meter_type,
+            amount: Number(formData.amount),
           },
         }
       );
@@ -201,6 +201,17 @@ function Electricity() {
       </h1>
 
       <div className="bg-white rounded-xl shadow-sm p-6">
+        {/* Add Info Banner */}
+        <div className="mb-6 flex items-start space-x-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <InformationCircleIcon className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-yellow-700">
+            <p className="font-medium mb-1">Service Charge Notice</p>
+            <p>
+              A service charge of ₦150 will be added to your payment amount.
+            </p>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Disco Dropdown */}
           <div className="relative">
@@ -338,6 +349,28 @@ function Electricity() {
               </div>
             )}
           </div>
+
+          {/* Update the total amount display if you have one */}
+          {formData.amount && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Amount:</span>
+                <span className="font-medium">
+                  ₦{Number(formData.amount).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm mt-2">
+                <span className="text-gray-600">Service Charge:</span>
+                <span className="font-medium">₦150</span>
+              </div>
+              <div className="flex justify-between items-center text-base mt-2 pt-2 border-t">
+                <span className="font-medium text-gray-900">Total Amount:</span>
+                <span className="font-bold text-gray-900">
+                  ₦{(Number(formData.amount) + 150).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Payment Method Selector */}
           {isVerified && (

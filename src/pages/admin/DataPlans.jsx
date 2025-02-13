@@ -24,14 +24,36 @@ function DataPlans() {
     try {
       const response = await api.get("/transactions/data-plans");
       if (response.data) {
-        const allPlans = [
-          ...Object.values(response.data.MTN_PLAN || {}).flat(),
-          ...Object.values(response.data.GLO_PLAN || {}).flat(),
-          ...Object.values(response.data.AIRTEL_PLAN || {}).flat(),
-          ...Object.values(response.data["9MOBILE_PLAN"] || {}).flat(),
-        ].filter(Boolean);
+        // Create a map to track unique plan IDs
+        const uniquePlans = new Map();
 
-        setPlans(allPlans);
+        // Helper function to process plans
+        const processPlans = (plansArray) => {
+          plansArray.forEach((plan) => {
+            // Use dataplan_id or _id as unique identifier
+            const planId = plan.dataplan_id || plan._id;
+            if (!uniquePlans.has(planId)) {
+              uniquePlans.set(planId, plan);
+            }
+          });
+        };
+
+        // Process plans for each network
+        if (response.data.MTN_PLAN) {
+          Object.values(response.data.MTN_PLAN).forEach(processPlans);
+        }
+        if (response.data.GLO_PLAN) {
+          Object.values(response.data.GLO_PLAN).forEach(processPlans);
+        }
+        if (response.data.AIRTEL_PLAN) {
+          Object.values(response.data.AIRTEL_PLAN).forEach(processPlans);
+        }
+        if (response.data["9MOBILE_PLAN"]) {
+          Object.values(response.data["9MOBILE_PLAN"]).forEach(processPlans);
+        }
+
+        // Convert map values back to array
+        setPlans(Array.from(uniquePlans.values()));
       }
     } catch (error) {
       notify.error("Failed to fetch data plans");
@@ -79,8 +101,41 @@ function DataPlans() {
     }
   };
 
+  // Add this helper function to convert data size to MB for sorting
+  const convertToMB = (planName) => {
+    const cleanPlan = planName.toLowerCase().replace(/\s+/g, "");
+
+    // Extract number and unit from plan name
+    const match = cleanPlan.match(/(\d+(?:\.\d+)?)\s*(mb|gb|tb)?/);
+    if (!match) return 0;
+
+    const [, number, unit = "mb"] = match;
+    const value = parseFloat(number);
+
+    switch (unit.toLowerCase()) {
+      case "tb":
+        return value * 1024 * 1024;
+      case "gb":
+        return value * 1024;
+      case "mb":
+        return value;
+      default:
+        return value;
+    }
+  };
+
+  // Update getNetworkPlans function to ensure unique plans
   const getNetworkPlans = (networkName) => {
-    return plans.filter((plan) => plan.plan_network === networkName);
+    const networkPlans = plans.filter(
+      (plan) => plan.plan_network === networkName
+    );
+
+    // Sort plans by data size
+    return [...new Set(networkPlans)].sort((a, b) => {
+      const sizeA = convertToMB(a.plan);
+      const sizeB = convertToMB(b.plan);
+      return sizeA - sizeB;
+    });
   };
 
   const renderEditModal = () => (
