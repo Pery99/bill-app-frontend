@@ -80,9 +80,9 @@ function Dashboard() {
   const updates = [
     {
       id: 1,
-      title: "Data Plans Now Available",
+      title: "9mobile Plans are Not Available",
       description:
-        "Get the best data plans for all networks at the best prices.",
+        "Please not that 9mobile data plans are currently not available due to network issues. We are working to resolve this.",
       date: new Date(),
     },
     {
