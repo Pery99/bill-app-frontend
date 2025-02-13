@@ -270,7 +270,7 @@ function Data() {
   };
 
   // Add state for plan category tabs
-  const [activeCategory, setActiveCategory] = useState("ALL");
+  const [activeCategory, setActiveCategory] = useState("SME");
 
   // Add category tabs component for MTN
   const renderMTNCategoryTabs = () => {
@@ -278,7 +278,7 @@ function Data() {
 
     return (
       <div className="flex space-x-2 mb-4">
-        {["ALL", "SME", "CORPORATE"].map((category) => (
+        {["SME", "CORPORATE"].map((category) => (
           <button
             key={category}
             onClick={() => setActiveCategory(category)}
