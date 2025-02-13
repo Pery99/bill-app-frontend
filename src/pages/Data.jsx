@@ -49,194 +49,59 @@ function Data() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Update function to extract validity period from plan name and duration
-  const extractValidityPeriod = (plan) => {
-    const validity = plan.month_validate.toLowerCase();
-
-    // Handle special cases for monthly plans
-    if (validity.includes("30") || validity.includes("month")) {
-      return "30";
-    }
-
-    // Handle daily plans
-    if (
-      validity.includes("24 hrs") ||
-      validity.includes("24hrs") ||
-      validity.includes("1 day")
-    ) {
-      return "1";
-    }
-
-    // Extract numeric value
-    const match = validity.match(/^(\d+)/);
-    if (!match) return "30"; // Default to 30 if no number found
-
-    const days = match[1];
-    // Normalize 48hrs to 2 days
-    if (validity.includes("hrs") || validity.includes("hours")) {
-      return Math.ceil(parseInt(days) / 24).toString();
-    }
-
-    return days;
-  };
-
-  // Update getValidityPeriods function to handle special cases
-  const getValidityPeriods = () => {
-    if (!dataPlans?.[0]) return [];
-    const currentNetwork = formData.network;
-    let planData;
-
-    switch (currentNetwork) {
-      case "1":
-        planData = dataPlans[0].MTN_PLAN.ALL || [];
-        break;
-      case "2":
-        planData = dataPlans[0].GLO_PLAN.ALL || [];
-        break;
-      case "3":
-        planData = dataPlans[0]["9MOBILE_PLAN"].ALL || [];
-        break;
-      case "4":
-        planData = dataPlans[0].AIRTEL_PLAN.ALL || [];
-        break;
-      default:
-        planData = [];
-    }
-
-    // Get unique validity periods with proper parsing
-    const periods = [
-      ...new Set(planData.map((plan) => extractValidityPeriod(plan))),
-    ];
-
-    // Sort periods numerically and filter out invalid ones
-    return periods
-      .filter((period) => !isNaN(period))
-      .sort((a, b) => Number(a) - Number(b));
-  };
-
-  // Update the network change handler in the dropdown
-  const handleNetworkChange = (networkId) => {
-    handleInputChange({
-      target: { name: "network", value: networkId },
-    });
-    setIsDropdownOpen(false);
-    setFormData((prev) => ({ ...prev, planId: "" }));
-
-    // Try to keep monthly tab, fall back to first available
-    const periods = getValidityPeriods();
-    if (periods.includes("30")) {
-      setActiveTab("30");
-    } else {
-      setActiveTab(periods[0] || "30");
-    }
-  };
-
-  // Update getPlanTypes to handle non-MTN networks
-  const getPlanTypes = () => {
-    if (!dataPlans?.[0]) return [];
-    const currentNetwork = formData.network;
-    let planData;
-
-    switch (currentNetwork) {
-      case "1":
-        planData = dataPlans[0].MTN_PLAN;
-        // Filter out SME2 from plan types
-        return Object.keys(planData).filter(
-          (type) =>
-            type !== "SME2" &&
-            Array.isArray(planData[type]) &&
-            planData[type].length > 0
-        );
-      default:
-        // For other networks, only show 'ALL' tab
-        return ["ALL"];
-    }
-  };
-
-  // Update getCurrentPlans function to handle the correct data format
+  // Simplified getCurrentPlans function
   const getCurrentPlans = () => {
     if (!dataPlans) return [];
 
     const currentNetwork = formData.network;
-    let planData;
-
     switch (currentNetwork) {
       case "1": // MTN
-        if (activeTab === "CORPORATE") {
-          planData = dataPlans.MTN_PLAN?.CORPORATE || [];
-        } else if (activeTab === "SME") {
-          planData = dataPlans.MTN_PLAN?.SME || [];
-        } else {
-          planData = dataPlans.MTN_PLAN?.ALL || [];
+        switch (activeCategory) {
+          case "CORPORATE":
+            return dataPlans.MTN_PLAN?.CORPORATE || [];
+          case "SME":
+            return dataPlans.MTN_PLAN?.SME || [];
+          case "ALL":
+            // Filter out SME and CORPORATE GIFTING plans from ALL category
+            const allPlans = dataPlans.MTN_PLAN?.ALL || [];
+            return allPlans.filter(
+              plan => 
+                !["SME", "CORPORATE GIFTING"].includes(plan.plan_type)
+            );
+          default:
+            return [];
         }
-        break;
       case "2": // GLO
-        planData = dataPlans.GLO_PLAN?.ALL || [];
-        break;
+        return dataPlans.GLO_PLAN?.ALL || [];
       case "3": // 9MOBILE
-        planData = dataPlans["9MOBILE_PLAN"]?.ALL || [];
-        break;
+        return dataPlans["9MOBILE_PLAN"]?.ALL || [];
       case "4": // AIRTEL
-        planData = dataPlans.AIRTEL_PLAN?.ALL || [];
-        break;
+        return dataPlans.AIRTEL_PLAN?.ALL || [];
       default:
-        planData = [];
+        return [];
     }
-
-    // Sort plans by amount
-    return planData.sort(
-      (a, b) => Number(a.plan_amount) - Number(b.plan_amount)
-    );
   };
 
-  // Update formatValidity function to better handle special cases
-  const formatValidity = (validity) => {
-    if (!validity) return "";
-
-    const lowerValidity = validity.toLowerCase();
-
-    // Handle monthly cases
-    if (lowerValidity.includes("30") || lowerValidity.includes("month")) {
-      return "Monthly";
-    }
-
-    // Handle hour cases
-    if (lowerValidity.includes("hrs") || lowerValidity.includes("hours")) {
-      const hours = parseInt(lowerValidity);
-      if (isNaN(hours)) return validity;
-      if (hours === 24) return "Daily";
-      return `${Math.ceil(hours / 24)} Days`;
-    }
-
-    // Extract the number of days
-    const daysMatch = lowerValidity.match(/^(\d+)/);
-    if (!daysMatch) return validity;
-
-    const days = parseInt(daysMatch[1]);
-
-    // Handle special cases
-    if (days === 1) return "Daily";
-    if (days === 7) return "Weekly";
-    if (days === 14) return "2 Weeks";
-    if (days === 30) return "Monthly";
-    if (days === 90) return "3 Months";
-    if (days === 120) return "4 Months";
-    if (days === 365) return "Annual";
-
-    return `${days} Days`;
-  };
-
-  // Update formatPlanType for better display
+  // Simple formatPlanType function
   const formatPlanType = (type) => {
-    const typeMap = {
-      "CORPORATE GIFTING": "Corporate",
-      "DATA SHARE": "Sharing",
-      "AWOOF DATA": "Awoof",
-      SME: "SME",
-      SME2: "SME Plus",
-    };
-    return typeMap[type] || type;
+    if (!type) return '';
+    return type;
   };
+
+  // Simplified network change handler
+  const handleNetworkChange = (networkId) => {
+    setFormData((prev) => ({ ...prev, network: networkId, planId: "" }));
+    setIsDropdownOpen(false);
+    setActiveCategory("ALL");
+  };
+
+  // Remove unused functions:
+  // - extractValidityPeriod
+  // - getValidityPeriods
+  // - getPlanTypes
+  // - formatValidity
+  // - getSelectedPlanDetails
+  // - getCurrentNetworkPlans
 
   // Load data plans when component mounts or network changes
   useEffect(() => {
@@ -404,20 +269,30 @@ function Data() {
     }
   };
 
-  const getSelectedPlanDetails = () => {
-    for (const category of Object.values(networkDataPlans[formData.network])) {
-      const plan = category.find((p) => p.id === formData.planId);
-      if (plan) return plan;
-    }
-    return null;
-  };
+  // Add state for plan category tabs
+  const [activeCategory, setActiveCategory] = useState("ALL");
 
-  // Get current network's data plans
-  const getCurrentNetworkPlans = () => {
-    if (!dataPlans) return [];
-    return activeTab === "CORPORATE"
-      ? dataPlans.CORPORATE
-      : dataPlans[activeTab] || [];
+  // Add category tabs component for MTN
+  const renderMTNCategoryTabs = () => {
+    if (formData.network !== "1") return null;
+
+    return (
+      <div className="flex space-x-2 mb-4">
+        {["ALL", "SME", "CORPORATE"].map((category) => (
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              activeCategory === category
+                ? "bg-blue-100 text-blue-700"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -544,6 +419,9 @@ function Data() {
               <p className="text-red-500 text-xs mt-1">{errors.network}</p>
             )}
           </div>
+
+          {/* Add category tabs after network selection */}
+          {formData.network === "1" && renderMTNCategoryTabs()}
 
           {/* Data Plans Selection */}
           {isLoadingPlans ? (
