@@ -174,6 +174,7 @@ function DataPlans() {
             value={editingPlan?.plan || ""}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            readOnly
           />
         </div>
 
@@ -187,6 +188,7 @@ function DataPlans() {
             value={editingPlan?.plan_type || ""}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            readOnly
           />
         </div>
 
@@ -200,6 +202,7 @@ function DataPlans() {
             value={editingPlan?.month_validate || ""}
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            readOnly
           />
         </div>
 
