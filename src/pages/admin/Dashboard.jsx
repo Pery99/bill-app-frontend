@@ -10,6 +10,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ExclamationCircleIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { StatCardSkeleton } from "../../components/Skeleton";
 
@@ -23,8 +24,17 @@ function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
 
+  // Add state for API balance
+  const [apiBalance, setApiBalance] = useState({
+    balance: 0,
+    formattedBalance: "₦0",
+    lastChecked: null,
+  });
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+
   useEffect(() => {
     fetchStats();
+    fetchApiBalance();
   }, []);
 
   const fetchStats = async () => {
@@ -35,6 +45,19 @@ function Dashboard() {
       notify.error("Failed to fetch statistics");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Add function to fetch API balance
+  const fetchApiBalance = async () => {
+    setIsLoadingBalance(true);
+    try {
+      const response = await api.get("/admin/api-balance");
+      setApiBalance(response.data);
+    } catch (error) {
+      notify.error("Failed to fetch API balance");
+    } finally {
+      setIsLoadingBalance(false);
     }
   };
 
@@ -140,6 +163,37 @@ function Dashboard() {
           >
             View All Transactions
           </Link>
+        </div>
+      </div>
+
+      {/* API Balance Card */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">API Balance</h3>
+            <div className="mt-2 flex items-baseline">
+              <p className="text-3xl font-bold text-gray-900">
+                {apiBalance.formattedBalance}
+              </p>
+            </div>
+            {apiBalance.lastChecked && (
+              <p className="mt-1 text-sm text-gray-500">
+                Last checked:{" "}
+                {new Date(apiBalance.lastChecked).toLocaleString()}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={fetchApiBalance}
+            disabled={isLoadingBalance}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <ArrowPathIcon
+              className={`w-5 h-5 text-gray-600 ${
+                isLoadingBalance ? "animate-spin" : ""
+              }`}
+            />
+          </button>
         </div>
       </div>
 
