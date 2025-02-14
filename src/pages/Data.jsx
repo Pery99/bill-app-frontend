@@ -278,7 +278,7 @@ function Data() {
 
     return (
       <div className="flex space-x-2 mb-4">
-        {["SME", "CORPORATE"].map((category) => (
+        {["ALL","SME", "CORPORATE"].map((category) => (
           <button
             key={category}
             onClick={() => setActiveCategory(category)}
