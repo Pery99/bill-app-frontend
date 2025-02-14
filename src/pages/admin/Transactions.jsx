@@ -80,6 +80,16 @@ function Transactions() {
     });
   };
 
+  const getNetworkName = (providerId) => {
+    const networks = {
+      1: "MTN",
+      2: "GLO",
+      3: "9mobile",
+      4: "Airtel",
+    };
+    return networks[providerId] || "Unknown";
+  };
+
   const renderTransactionDetails = () => (
     <Modal
       isOpen={!!selectedTransaction}
@@ -87,40 +97,164 @@ function Transactions() {
       title="Transaction Details"
     >
       {selectedTransaction && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-500">
-                Reference
-              </label>
-              <p className="mt-1">{selectedTransaction.reference}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">
-                Amount
-              </label>
-              <p className="mt-1">
-                ₦{selectedTransaction.amount?.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">
-                Status
-              </label>
-              <p className="mt-1 capitalize">{selectedTransaction.status}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">Date</label>
-              <p className="mt-1">
-                {formatDate(selectedTransaction.createdAt)}
-              </p>
+        <div className="space-y-6">
+          {/* Basic Transaction Info */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">
+              Basic Information
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <DetailRow
+                label="Reference"
+                value={selectedTransaction.reference}
+              />
+              <DetailRow
+                label="Type"
+                value={selectedTransaction.type?.toUpperCase()}
+              />
+              <DetailRow
+                label="Amount"
+                value={`₦${selectedTransaction.amount?.toLocaleString()}`}
+              />
+              <DetailRow
+                label="Status"
+                value={
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium
+                    ${
+                      selectedTransaction.status === "completed"
+                        ? "bg-green-100 text-green-800"
+                        : selectedTransaction.status === "failed"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {selectedTransaction.status?.toUpperCase()}
+                  </span>
+                }
+              />
+              <DetailRow
+                label="Date"
+                value={formatDate(selectedTransaction.createdAt)}
+              />
+              <DetailRow
+                label="Transaction Type"
+                value={selectedTransaction.transaction_type?.toUpperCase()}
+              />
             </div>
           </div>
 
+          {/* Service-Specific Details */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">
+              Service Details
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Common fields */}
+              <DetailRow
+                label="Phone Number"
+                value={selectedTransaction.phone}
+              />
+              <DetailRow
+                label="Network"
+                value={getNetworkName(selectedTransaction.provider)}
+              />
+
+              {/* Data-specific fields */}
+              {selectedTransaction.type === "data" && (
+                <DetailRow
+                  label="Data Plan ID"
+                  value={selectedTransaction.plan}
+                />
+              )}
+
+              {/* Electricity-specific fields */}
+              {selectedTransaction.type === "electricity" && (
+                <>
+                  <DetailRow
+                    label="Meter Number"
+                    value={selectedTransaction.meter_number}
+                  />
+                  <DetailRow
+                    label="Disco"
+                    value={selectedTransaction.disco_name}
+                  />
+                  <DetailRow
+                    label="Meter Type"
+                    value={
+                      selectedTransaction.meter_type === "1"
+                        ? "Prepaid"
+                        : "Postpaid"
+                    }
+                  />
+                  {selectedTransaction.token && (
+                    <DetailRow
+                      label="Token"
+                      value={selectedTransaction.token}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* TV-specific fields */}
+              {selectedTransaction.type === "tv" && (
+                <>
+                  <DetailRow
+                    label="Smart Card Number"
+                    value={selectedTransaction.smartcard_number}
+                  />
+                  <DetailRow
+                    label="Package"
+                    value={selectedTransaction.package}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* API Response Details if available */}
+          {selectedTransaction.apiDetails && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">
+                API Response
+              </h3>
+              <div className="space-y-2">
+                <DetailRow
+                  label="API Status"
+                  value={
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium
+                      ${
+                        selectedTransaction.apiDetails.status === "successful"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {selectedTransaction.apiDetails.status}
+                    </span>
+                  }
+                />
+                {selectedTransaction.apiDetails.message && (
+                  <DetailRow
+                    label="Message"
+                    value={selectedTransaction.apiDetails.message}
+                  />
+                )}
+                <DetailRow
+                  label="Response Time"
+                  value={formatDate(
+                    selectedTransaction.apiDetails.responseTime
+                  )}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Refund Button */}
           {selectedTransaction.status === "completed" && (
             <button
               onClick={() => setShowRefundModal(true)}
-              className="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
             >
               Process Refund
             </button>
@@ -128,6 +262,13 @@ function Transactions() {
         </div>
       )}
     </Modal>
+  );
+
+  const DetailRow = ({ label, value }) => (
+    <div>
+      <dt className="text-sm font-medium text-gray-500">{label}</dt>
+      <dd className="mt-1 text-sm text-gray-900">{value}</dd>
+    </div>
   );
 
   const renderRefundModal = () => (

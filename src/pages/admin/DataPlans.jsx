@@ -8,6 +8,7 @@ function DataPlans() {
   const [loading, setLoading] = useState(true);
   const [editingPlan, setEditingPlan] = useState(null);
   const [activeNetwork, setActiveNetwork] = useState("MTN");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const networkTabs = [
     { id: "MTN", name: "MTN", color: "yellow" },
@@ -124,18 +125,36 @@ function DataPlans() {
     }
   };
 
-  // Update getNetworkPlans function to ensure unique plans
+  // Add search filter function
+  const filterPlans = (plans) => {
+    if (!searchQuery) return plans;
+
+    return plans.filter((plan) =>
+      plan.dataplan_id
+        ?.toString()
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+  };
+
+  // Update getNetworkPlans function to ensure unique plans and include search
   const getNetworkPlans = (networkName) => {
     const networkPlans = plans.filter(
       (plan) => plan.plan_network === networkName
     );
 
+    const filteredPlans = filterPlans(networkPlans);
+
     // Sort plans by data size
-    return [...new Set(networkPlans)].sort((a, b) => {
+    return [...new Set(filteredPlans)].sort((a, b) => {
       const sizeA = convertToMB(a.plan);
       const sizeB = convertToMB(b.plan);
       return sizeA - sizeB;
     });
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   const renderEditModal = () => (
@@ -227,6 +246,15 @@ function DataPlans() {
     <div className="space-y-6">
       <div className="sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Manage Data Plans</h1>
+        <div className="mt-4 sm:mt-0">
+          <input
+            type="text"
+            placeholder="Search by Plan ID..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="w-full sm:w-64 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
 
       {/* Network tabs - scrollable on mobile */}
@@ -261,6 +289,9 @@ function DataPlans() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Plan ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Plan
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -282,6 +313,16 @@ function DataPlans() {
                 <tr key={plan._id}>
                   {editingPlan?._id === plan._id ? (
                     <>
+                      <td className="px-6 py-4">
+                        <input
+                          type="text"
+                          name="dataplan_id"
+                          value={editingPlan.dataplan_id || ""}
+                          onChange={handleInputChange}
+                          className="input-field"
+                          placeholder="Plan ID"
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <input
                           type="text"
@@ -335,6 +376,7 @@ function DataPlans() {
                     </>
                   ) : (
                     <>
+                      <td className="px-6 py-4">{plan.dataplan_id}</td>
                       <td className="px-6 py-4">{plan.plan}</td>
                       <td className="px-6 py-4">{plan.plan_type}</td>
                       <td className="px-6 py-4">{plan.month_validate}</td>
